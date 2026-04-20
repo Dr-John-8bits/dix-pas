@@ -57,7 +57,7 @@ La V1 du projet comprend :
 - **1 MIDI IN**
 - **1 MIDI OUT**
 - **2 Gate Out**
-- **1 écran OLED I2C 128x64**
+- **1 écran OLED I2C 128x64 SSD1306**
 - **1 encodeur principal avec poussoir**
 - **3 rangées de 10 boutons**
 - **presets**
@@ -264,10 +264,11 @@ Connectique recommandée :
 Les choix hardware valides pour la V1 sont :
 
 - **MCU** : Arduino Nano Every
-- **affichage** : OLED I2C 128x64
+- **affichage** : OLED I2C 128x64 SSD1306, format `1.3"` validé
 - **mémoire presets** : FRAM I2C externe
 - **MIDI** : DIN 5 broches
 - **Gate** : 2 sorties 5 V bufferisées
+- **alimentation** : entrée externe `9 V DC`, `centre positif`, conversion dédiée vers `5 V`
 
 Pourquoi le **Nano Every** est retenu :
 

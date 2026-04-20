@@ -922,7 +922,7 @@ void UiController::edit_global_value(int8_t delta) {
       break;
     }
     case GlobalTarget::MidiChannel: {
-      Track& track = focused_track();
+      Track& track = project_.machine_mode == MachineMode::Chain20 ? project_.track_a : focused_track();
       int16_t channel = static_cast<int16_t>(track.midi_channel) + delta;
       if (channel < kMinMidiChannel) {
         channel = kMinMidiChannel;
@@ -931,7 +931,12 @@ void UiController::edit_global_value(int8_t delta) {
         channel = kMaxMidiChannel;
       }
       track.midi_channel = static_cast<uint8_t>(channel);
-      snprintf(value, sizeof(value), "%u", static_cast<unsigned>(track.midi_channel));
+      if (project_.machine_mode == MachineMode::Chain20) {
+        snprintf(value, sizeof(value), "Chain %u",
+                 static_cast<unsigned>(project_.track_a.midi_channel));
+      } else {
+        snprintf(value, sizeof(value), "%u", static_cast<unsigned>(track.midi_channel));
+      }
       break;
     }
     case GlobalTarget::PresetSlot: {

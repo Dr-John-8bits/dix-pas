@@ -154,9 +154,9 @@ Recommandation de robustesse :
 
 Composant recommandé :
 
-- **74HC14** ou équivalent Schmitt trigger / buffer
+- **74HCS125** ou **74HC125**
 
-Cela protégé mieux le microcontrôleur et laisse des portes disponibles pour d'autres usages simples si besoin.
+Cela protège mieux le microcontrôleur et permet de mutualiser le même circuit logique avec les `Gate Out`.
 
 ### 5.3 Messages MIDI à gérer
 
@@ -184,6 +184,10 @@ Direction recommandée pour la V1 :
 - sorties **digitales**
 - pas de CV de pitch
 - étage de sortie **bufferisé**
+
+Référence détaillée des étages :
+
+- `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
 
 Comportement fonctionnel recommandé :
 
@@ -215,12 +219,12 @@ La configuration cible comprend :
 - 10 boutons piste A
 - 10 boutons piste B
 - 10 boutons de contrôle contextuel
-- 6 boutons système minimum
+- 5 boutons système
 - 1 poussoir intégré à l'encodeur
 
 Total cible de départ :
 
-- **37 entrées utilisateur**
+- **36 entrées utilisateur**
 
 ### 6.2 LEDs
 
@@ -256,15 +260,26 @@ Format recommandé :
 
 Recommandation concrète :
 
-- module compatible **SSD1306** ou **SH1106**
+- référence validée : **Adafruit Product 938**
+- contrôleur : **SSD1306**
+- adresse : `0x3C`
+- format : **1.3"**
+- dimensions écran : `34.5 x 23 mm`
+- zone active : `29.42 x 14.70 mm`
 
 Hypothèse firmware actuelle :
 
-- cible principale : **SSD1306**
+- cible : **SSD1306**
 - adresse I2C OLED retenue par défaut : `0x3C`
 - rendu texte sur `4 lignes`
 - police bitmap simple intégrée au firmware, sans dépendance externe
 - rendu paginé sans framebuffer complet pour préserver la RAM du `Nano Every`
+
+Confort de lecture visé :
+
+- écran bien adapté à un retour contextuel court
+- très bon choix pour `4 lignes` lisibles et stables
+- pas destiné à une interface dense type workstation
 
 Le rôle de l'écran est d'afficher :
 
@@ -389,12 +404,20 @@ La recommandation actuelle est :
 
 Direction matérielle à privilégier :
 
-- entrée alim type **barrel jack**
-- conversion propre vers **5 V**
+- entrée alim type **barrel jack 2.1 mm**
+- adaptateur externe **9 V DC centre positif**
+- conversion dédiée vers **5 V**
 - interrupteur general
-- protection de polarite
+- buck recommandé : **Pololu D24V25F5**
+- protection de polarite intégrée au buck recommandé
 
-Le choix exact du connecteur et du bloc alim reste à verrouiller pendant la phase schéma.
+Le standard électrique est désormais figé.
+
+Seule la référence mécanique exacte du jack pourra dépendre du boîtier final.
+
+Référence détaillée :
+
+- `docs/engineering/DIX_PAS_ALIMENTATION_REFERENCE.md`
 
 ---
 

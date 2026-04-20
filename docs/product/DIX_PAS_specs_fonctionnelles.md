@@ -310,7 +310,14 @@ Les commandes système minimales sont :
 - Reset
 - Shift
 - Mode
-- selection de piste ou cible d'édition
+
+La V1 ne prévoit pas de bouton `Select` dédié.
+
+La sélection de piste ou de cible d'édition se fait via :
+
+- les boutons de pas
+- la rangée de contrôle
+- l'encodeur et son poussoir
 
 ---
 

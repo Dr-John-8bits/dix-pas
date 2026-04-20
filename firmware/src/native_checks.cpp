@@ -473,6 +473,35 @@ bool test_ui_can_switch_machine_mode_from_global_edit(CheckContext& ctx) {
   return true;
 }
 
+bool test_chain20_uses_single_visible_midi_channel(CheckContext& ctx) {
+  App app;
+  ProjectState project = app.project();
+  project.track_b.midi_channel = 7U;
+  app.load_project(project);
+  UiController ui(app);
+  DisplayEngine display;
+  DisplayFrame frame{};
+
+  ui.press_mode_long();
+  cycle_to_global_target(ui, GlobalTarget::MachineMode);
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, MachineMode::Chain20, app.project().machine_mode);
+
+  cycle_to_global_target(ui, GlobalTarget::MidiChannel);
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, 2U, app.project().track_a.midi_channel);
+  CHECK_EQ(ctx, 7U, app.project().track_b.midi_channel);
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "Chain 2") != nullptr);
+
+  display.render(app, ui, frame);
+
+  ui.press_mode_long();
+  display.render(app, ui, frame);
+  CHECK_TRUE(ctx, strstr(frame.lines[1], "c02") != nullptr);
+  CHECK_TRUE(ctx, strstr(frame.lines[2], "c02") != nullptr);
+  return true;
+}
+
 bool test_shift_reset_toggles_diagnostic_mode(CheckContext& ctx) {
   App app;
   UiController ui(app);
@@ -596,6 +625,8 @@ int main() {
        test_ui_can_switch_clock_source_from_global_edit},
       {"ui_can_switch_machine_mode_from_global_edit",
        test_ui_can_switch_machine_mode_from_global_edit},
+      {"chain20_uses_single_visible_midi_channel",
+       test_chain20_uses_single_visible_midi_channel},
       {"shift_reset_toggles_diagnostic_mode", test_shift_reset_toggles_diagnostic_mode},
       {"diagnostic_shows_last_midi_input_event", test_diagnostic_shows_last_midi_input_event},
       {"shift_play_toggles_hardware_test_and_emits_outputs",

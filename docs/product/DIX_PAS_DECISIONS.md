@@ -155,13 +155,15 @@ Impact :
 
 Décision :
 
-- l'écran retenu est un **OLED I2C 128x64**
+- l'écran retenu est un **OLED I2C 128x64 SSD1306**
+- référence validée pour la V1 : **Adafruit Product 938**
 
 Raison :
 
 - assez lisible
 - simple à intégrer
 - suffisant pour le feedback contextuel de la V1
+- format `1.3"` plus confortable pour un instrument que les plus petits modules
 
 Impact :
 
@@ -256,6 +258,28 @@ Impact :
 
 - `LICENSE` racine en `0BSD`
 - `LICENSE-CC0.txt` pour la documentation, le hardware et les assets
+
+---
+
+## DEC-015 - Alimentation V1
+
+Décision :
+
+- la V1 sera alimentée par une **alimentation externe dédiée**
+- standard retenu : **9 V DC**, **centre positif**, **barrel 2.1 mm**
+- conversion système via un **buck 5 V dédié**
+- l'USB reste réservé au flash et au debug
+
+Raison :
+
+- architecture plus saine pour un instrument hardware
+- évite les achats provisoires et redondants
+- conserve une marge confortable pour toute la logique et les périphériques
+
+Impact :
+
+- le schéma et la BOM partent d'un rail principal `5 V` issu du buck
+- la référence mécanique exacte du jack pourra dépendre du boîtier final
 - `LICENSING.md` sert de table de répartition
 
 ---

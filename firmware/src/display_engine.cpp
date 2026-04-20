@@ -172,11 +172,14 @@ void render_track_line(const App& app, const UiController& ui, TrackId track, ch
   const uint8_t playhead_step = app.has_playhead_step(track)
                                     ? static_cast<uint8_t>(app.playhead_step(track) + 1U)
                                     : 0U;
+  const uint8_t visible_channel =
+      project.machine_mode == MachineMode::Chain20 ? project.track_a.midi_channel
+                                                   : track_state.midi_channel;
 
   format_line(dst, "%s%c s%02u p%02u l%02u c%02u", track_label(track), focus_marker,
               static_cast<unsigned>(selected_step), static_cast<unsigned>(playhead_step),
               static_cast<unsigned>(track_state.length),
-              static_cast<unsigned>(track_state.midi_channel));
+              static_cast<unsigned>(visible_channel));
 }
 
 void render_home_footer(const App& app, const UiController& ui, char* dst) {
@@ -239,8 +242,13 @@ void render_global_value_line(const App& app, const UiController& ui, char* dst)
                   static_cast<unsigned>(track.length));
       break;
     case GlobalTarget::MidiChannel:
-      format_line(dst, "%s MIDI Ch %u", track_label(ui.track_focus()),
-                  static_cast<unsigned>(track.midi_channel));
+      if (project.machine_mode == MachineMode::Chain20) {
+        format_line(dst, "Chain MIDI Ch %u",
+                    static_cast<unsigned>(project.track_a.midi_channel));
+      } else {
+        format_line(dst, "%s MIDI Ch %u", track_label(ui.track_focus()),
+                    static_cast<unsigned>(track.midi_channel));
+      }
       break;
     case GlobalTarget::PresetSlot:
       format_line(dst, "Preset Slot %u", static_cast<unsigned>(ui.preset_slot() + 1U));

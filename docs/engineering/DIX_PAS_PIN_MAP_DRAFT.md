@@ -76,7 +76,7 @@ Capacite :
 Entrees cibles :
 
 - 30 boutons des trois rangées
-- 6 boutons système
+- 5 boutons système
 - 1 poussoir encodeur si besoin de le remonter dans la chaine plus tard
 
 Le premier jet de firmware peut laisser l'encodeur sur GPIO directs et les autres boutons sur la chaine `74HC165`.
@@ -167,7 +167,9 @@ Contrainte :
 
 Recommendation :
 
-- buffer type `74HC125` ou étage équivalent
+- buffer type `74HCS125` recommandé
+- `1` canal pour `MIDI OUT`
+- `2` canaux pour `Gate Out A/B`
 
 ---
 

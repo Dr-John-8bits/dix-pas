@@ -18,7 +18,7 @@ Le but est de verifier que l'instrument est :
 
 Base de test recommandée :
 
-- alimentation nominale stable
+- alimentation externe `9 V DC` via la chaîne finale de conversion `5 V`
 - écran branche
 - boutons et encodeur branches
 - MIDI DIN IN et OUT branches sur un setup de test

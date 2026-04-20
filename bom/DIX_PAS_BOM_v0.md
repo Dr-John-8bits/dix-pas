@@ -39,7 +39,7 @@ Hypotheses retenues :
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
 | Carte contrôleur | 1 | Arduino Nano Every | Arduino Nano Every with headers | Recommandation principale pour la V1 |
-| Buffer / Schmitt trigger | 1 | 74HC14 | 74HCT14 | Protection et mise en forme MIDI OUT / usages annexes |
+| Buffer partagé MIDI OUT / Gate | 1 | 74HCS125 | 74HC125 | 1 canal MIDI OUT, 2 canaux Gate, 1 canal libre |
 | Registre a décalage entrée | 5 | 74HC165 | SN74HC165 | Jusqu'à 40 entrées utilisateur |
 | Registre a décalage sortie | 3 | 74HC595 | SN74HC595 | Jusqu'à 24 sorties LEDs |
 | Condensateurs de decouplage | 9 | 100 nF ceramique | Equivalent | 1 par CI minimum |
@@ -54,8 +54,11 @@ Hypotheses retenues :
 | Connecteur MIDI OUT | 1 | REAN NYS325 | Lumberg 0103 | DIN 5 broches femelle châssis |
 | Optocoupleur MIDI IN | 1 | 6N138 | H11L1 | Le schéma exact dependra du composant retenu |
 | Resistances MIDI OUT | 2 | 220 ohm 1/4 W | Equivalent | Valeur standard du current loop 5 V |
-| Passifs MIDI IN | 1 set | Selon schéma de référence | Selon optocoupleur | Valeurs a figer au schéma |
-| Diode signal | 1 | 1N4148 | Equivalent | Souvent utile sur l'étage MIDI IN selon le montage |
+| Resistance MIDI IN serie | 1 | 220 ohm 1/4 W | Equivalent | Serie entree opto |
+| Resistance MIDI IN pull-up | 1 | 10 kohm | Equivalent | Pull-up sortie `6N138` |
+| Resistance MIDI IN base | 1 | 4.7 kohm | Equivalent | Reglage vitesse / stabilite `6N138` |
+| Diode signal | 1 | 1N4148 | Equivalent | Antiparallèle protection entrée opto |
+| Condensateur MIDI IN | 1 | 100 nF ceramique | Equivalent | Decouplage `6N138` |
 
 ---
 
@@ -65,8 +68,7 @@ Hypotheses retenues :
 | --- | ---: | --- | --- | --- |
 | Connecteur Gate Out A | 1 | Jack mono 3.5 mm panel mount | Jack mono 6.35 mm | 3.5 mm recommandé pour garder le format compact |
 | Connecteur Gate Out B | 1 | Jack mono 3.5 mm panel mount | Jack mono 6.35 mm | Meme logique que Gate Out A |
-| Buffer sorties Gate | 1 | 74HC125 | 74HCT125 | Permet d'isoler le MCU du monde exterieur |
-| Passifs Gate Out | 1 set | Selon schéma de référence | Equivalent | Resistances série / pull-down selon l'étage retenu |
+| Passifs Gate Out | 1 set | `2 x 220 ohm` serie + `2 x 100 kohm` pull-down | Equivalent | Base de reference V1 |
 
 ---
 
@@ -75,7 +77,7 @@ Hypotheses retenues :
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
 | Boutons de pas / contrôle | 30 | Omron B3F série 12 x 12 mm | E-Switch TL1105 série | Boutons principaux des 3 rangées |
-| Boutons système | 6 | Omron B3F ou équivalent | E-Switch TL1105 | Play, Stop, Reset, Shift, Mode, Select |
+| Boutons système | 5 | Omron B3F ou équivalent | E-Switch TL1105 | Play, Stop, Reset, Shift, Mode |
 | Encodeur rotatif avec poussoir | 1 | Bourns PEC11H | Alps / équivalent qualitatif | Detentes franches recommandées |
 | LEDs piste A / B | 20 | LED diffuses 3 mm | LED diffuses 5 mm | Couleur à définir avec la facade |
 | LEDs système | 4 | LED diffuses 3 mm | Equivalent | Etat mode / sync / transport |
@@ -87,8 +89,8 @@ Hypotheses retenues :
 
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
-| Écran | 1 | OLED 128 x 64 I2C compatible SSD1306 / SH1106 | Module équivalent | Format 0.96" a 1.3" |
-| Exemple écran | 1 | Adafruit 1.3" OLED Product 938 | Equivalent | Pratique si tu veux une ref simple et documentée |
+| Écran | 1 | Adafruit Product 938, OLED 1.3" 128 x 64 I2C SSD1306 | Module SSD1306 0x3C équivalent | Référence V1 validée, format 1.3" recommandé |
+| Détails écran | 1 | Adresse `0x3C`, écran `34.5 x 23 mm`, zone active `29.42 x 14.70 mm` | - | Dimensions utiles pour la façade et la lisibilité |
 | Memoire presets | 1 | FRAM I2C 32 KB | EEPROM I2C 24LC256 | FRAM recommandée pour ecritures frequentes |
 | Exemple FRAM | 1 | Adafruit FRAM 256 Kbit Product 1895 | Module équivalent | Bonne base pour validation rapide |
 
@@ -98,11 +100,12 @@ Hypotheses retenues :
 
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
-| Connecteur alimentation | 1 | Barrel jack panneau | A definir | A verrouiller avec le boîtier |
-| Interrupteur general | 1 | Toggle ou rocker panel mount | Equivalent | Marche / arret |
-| Conversion vers 5 V | 1 | Buck regulator 5 V | Module DC-DC équivalent | A privilegier si alim externe > 5 V |
-| Protection polarite | 1 | Diode Schottky ou MOSFET ideal diode | Equivalent | Recommande |
-| Filtrage alim | 1 set | Electrolytiques + ceramiques | Equivalent | A definir au schéma |
+| Alimentation externe | 1 | Adaptateur `9 V DC`, centre positif, `1 A` min | Adaptateur régulé équivalent | Standard V1 retenu |
+| Connecteur alimentation | 1 | Standard barrel `2.1 mm`, centre positif | Réf mécanique selon boîtier | Le standard électrique est figé, pas la mécanique finale |
+| Interrupteur general | 1 | SPST panel mount | Toggle ou rocker équivalent | Marche / arrêt |
+| Conversion vers 5 V | 1 | Pololu D24V25F5 | Buck `5 V` 2 A+ équivalent | Buck dédié retenu pour la V1 |
+| Protection polarite | 0 | Intégrée au D24V25F5 | À ajouter si autre buck | Pas d'étage séparé si buck retenu |
+| Filtrage alim | 1 set | `47-100 µF` entrée, `47-100 µF` sortie, `100 nF` par CI | Equivalent | Base recommandée pour le premier schéma |
 
 ---
 
@@ -122,7 +125,7 @@ Hypotheses retenues :
 
 Cette BOM ne figé pas encore :
 
-- le type exact d'alimentation externe
+- la référence mécanique exacte du jack d'alimentation
 - les valeurs complètes de l'étage MIDI IN
 - la topologie finale de l'étage Gate Out
 - la couleur finale des LEDs
