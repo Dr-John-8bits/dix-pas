@@ -66,8 +66,8 @@ Hypotheses retenues :
 
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
-| Connecteur Gate Out A | 1 | Jack mono 3.5 mm panel mount | Jack mono 6.35 mm | 3.5 mm recommandé pour garder le format compact |
-| Connecteur Gate Out B | 1 | Jack mono 3.5 mm panel mount | Jack mono 6.35 mm | Meme logique que Gate Out A |
+| Connecteur Gate Out A | 1 | Switchcraft 35PM1 | Jack mono 6.35 mm panneau | Jack mono `3.5 mm` panneau, soudure, fileté |
+| Connecteur Gate Out B | 1 | Switchcraft 35PM1 | Jack mono 6.35 mm panneau | Même référence que Gate Out A |
 | Passifs Gate Out | 1 set | `2 x 220 ohm` serie + `2 x 100 kohm` pull-down | Equivalent | Base de reference V1 |
 
 ---
@@ -76,8 +76,8 @@ Hypotheses retenues :
 
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
-| Boutons de pas / contrôle | 30 | Omron B3F série 12 x 12 mm | E-Switch TL1105 série | Boutons principaux des 3 rangées |
-| Boutons système | 5 | Omron B3F ou équivalent | E-Switch TL1105 | Play, Stop, Reset, Shift, Mode |
+| Boutons de pas / contrôle | 30 | Omron B3F-1000 | Omron B3W-1000 | `12 x 12 mm` through-hole, référence simple V1 |
+| Boutons système | 5 | Omron B3F-1000 | Omron B3W-1000 | Même famille pour homogénéité de sensation |
 | Encodeur rotatif avec poussoir | 1 | Bourns PEC11H | Alps / équivalent qualitatif | Detentes franches recommandées |
 | LEDs piste A / B | 20 | LED diffuses 3 mm | LED diffuses 5 mm | Couleur à définir avec la facade |
 | LEDs système | 4 | LED diffuses 3 mm | Equivalent | Etat mode / sync / transport |
@@ -101,8 +101,8 @@ Hypotheses retenues :
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
 | Alimentation externe | 1 | Adaptateur `9 V DC`, centre positif, `1 A` min | Adaptateur régulé équivalent | Standard V1 retenu |
-| Connecteur alimentation | 1 | Standard barrel `2.1 mm`, centre positif | Réf mécanique selon boîtier | Le standard électrique est figé, pas la mécanique finale |
-| Interrupteur general | 1 | SPST panel mount | Toggle ou rocker équivalent | Marche / arrêt |
+| Connecteur alimentation | 1 | Switchcraft 721AU | Switchcraft PC721AU | Jack DC `2.1 mm`, panneau, soudure |
+| Interrupteur general | 1 | Famille C&K PT Series, `SPST` maintenu `ON/OFF` | Toggle panel mount équivalent | Suffixe exact à figer avec le panneau final |
 | Conversion vers 5 V | 1 | Pololu D24V25F5 | Buck `5 V` 2 A+ équivalent | Buck dédié retenu pour la V1 |
 | Protection polarite | 0 | Intégrée au D24V25F5 | À ajouter si autre buck | Pas d'étage séparé si buck retenu |
 | Filtrage alim | 1 set | `47-100 µF` entrée, `47-100 µF` sortie, `100 nF` par CI | Equivalent | Base recommandée pour le premier schéma |
@@ -125,10 +125,10 @@ Hypotheses retenues :
 
 Cette BOM ne fige pas encore :
 
-- la référence mécanique exacte du jack d'alimentation
 - la couleur finale des LEDs
 - la presence ou non de LEDs sur la troisième rangée
 - le type exact de boîtier
+- le suffixe exact de l'interrupteur général selon le panneau retenu
 
 ---
 

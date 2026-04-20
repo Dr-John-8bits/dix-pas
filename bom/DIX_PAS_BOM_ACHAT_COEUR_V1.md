@@ -70,15 +70,15 @@ Références documentaires associées :
 
 Ces éléments dépendent davantage de la mécanique finale ou du ressenti :
 
-| Sous-système | Qte | Statut |
-| --- | ---: | --- |
-| Boutons des `3` rangées | 30 | À figer juste avant façade |
-| Boutons système | 5 | À figer juste avant façade |
-| LEDs façade | 24 | Couleur finale encore ouverte |
-| Jacks `Gate Out` panneau | 2 | Référence mécanique à figer selon implantation |
-| Jack alimentation `2.1 mm` | 1 | Référence mécanique à figer selon implantation |
-| Interrupteur panneau | 1 | Référence mécanique à figer selon boîtier |
-| Entretoises, visserie, panneau, boîtier | - | Hors scope de cette BOM cœur |
+| Sous-système | Qte | Référence recommandée | Statut |
+| --- | ---: | --- | --- |
+| Boutons des `3` rangées | 30 | Omron B3F-1000 | Achat recommandé dès que la façade démarre |
+| Boutons système | 5 | Omron B3F-1000 | Même référence pour garder une sensation homogène |
+| LEDs façade | 24 | LED diffuses `3 mm` | Couleur finale encore ouverte |
+| Jacks `Gate Out` panneau | 2 | Switchcraft 35PM1 | Référence désormais recommandée |
+| Jack alimentation `2.1 mm` | 1 | Switchcraft 721AU | Référence désormais recommandée |
+| Interrupteur panneau | 1 | Famille C&K PT Series, `SPST` maintenu `ON/OFF` | Suffixe exact à figer avec le panneau final |
+| Entretoises, visserie, panneau, boîtier | - | - | Hors scope de cette BOM cœur |
 
 ---
 
@@ -113,6 +113,27 @@ Même logique :
 - facile à breadboarder
 - facile à remplacer
 - cohérent avec la phase de validation par sous-ensembles
+
+### 5.4 Pourquoi `B3F-1000` pour les boutons
+
+Le choix `Omron B3F-1000` est recommandé parce que :
+
+- la famille `B3F` est toujours en production
+- le format `12 x 12 mm` through-hole est adapté à un premier circuit propre
+- la page officielle OMRON annonce une durabilité étendue pour les `12 x 12 mm`
+
+Alternative si tu veux une variante plus protégée plus tard :
+
+- `Omron B3W-1000`
+
+### 5.5 Pourquoi `35PM1` et `721AU`
+
+Ces deux références sont retenues parce qu'elles sont déjà de vraies pièces panneau :
+
+- `Switchcraft 35PM1` pour les `Gate Out`
+- `Switchcraft 721AU` pour l'alimentation `2.1 mm`
+
+Elles évitent de partir sur des jacks trop “proto only” qu'il faudrait remplacer juste après.
 
 ---
 
