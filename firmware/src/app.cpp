@@ -11,6 +11,10 @@ void App::load_project(const ProjectState& project) {
   apply_project(project, true);
 }
 
+void App::load_default_project() {
+  load_project(build_default_project());
+}
+
 void App::apply_project(const ProjectState& project, bool reset_playhead) {
   clock_.set_tempo_bpm_x10(project.tempo_bpm_x10);
   sequencer_.apply_project(project, reset_playhead);

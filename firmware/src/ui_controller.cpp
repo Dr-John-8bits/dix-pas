@@ -719,7 +719,9 @@ void UiController::apply_hardware_test_phase() {
   const TrackId track = hardware_test_track(hardware_test_phase_);
   const bool high = hardware_test_phase_high(hardware_test_phase_);
   const uint8_t midi_channel =
-      track == TrackId::A ? project_.track_a.midi_channel : project_.track_b.midi_channel;
+      project_.machine_mode == MachineMode::Chain20
+          ? project_.track_a.midi_channel
+          : (track == TrackId::A ? project_.track_a.midi_channel : project_.track_b.midi_channel);
   const uint8_t note = hardware_test_note(track);
   const int8_t octave = static_cast<int8_t>(note / 12U) - 1;
 

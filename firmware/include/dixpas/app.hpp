@@ -18,6 +18,7 @@ class App {
   App();
 
   void load_project(const ProjectState& project);
+  void load_default_project();
   void apply_project(const ProjectState& project, bool reset_playhead);
   [[nodiscard]] const ProjectState& project() const { return sequencer_.project(); }
 

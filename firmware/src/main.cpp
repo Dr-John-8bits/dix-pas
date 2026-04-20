@@ -6,6 +6,7 @@
 #include "dixpas/music_scales.hpp"
 #include "dixpas/oled_display.hpp"
 #include "dixpas/panel_led_driver.hpp"
+#include "dixpas/startup_logic.hpp"
 #include "dixpas/storage_engine.hpp"
 #include "dixpas/ui_hardware.hpp"
 #include "dixpas/ui_controller.hpp"
@@ -97,38 +98,14 @@ void initialize_storage_and_startup_project() {
   const bool display_ready = g_oled_display.is_ready();
   g_ui.set_hardware_status(storage_ready, display_ready);
 
-  if (!storage_ready) {
-    g_ui.set_startup_message(display_ready ? "No FRAM" : "No FRAM/OLED");
-    return;
+  const dixpas::StartupSelectionResult startup =
+      dixpas::apply_startup_project(g_app, &g_storage, storage_ready, display_ready);
+
+  if (startup.storage_available) {
+    g_ui.attach_storage(g_storage);
   }
 
-  dixpas::StorageMetadataV1 metadata{};
-  if (g_storage.load_metadata(metadata) != dixpas::StorageStatus::Ok) {
-    metadata = dixpas::StorageEngine::build_default_metadata();
-    g_storage.save_metadata(metadata);
-  }
-
-  bool loaded_preset = false;
-  uint8_t startup_slot = 0U;
-  if (dixpas::StorageEngine::preferred_startup_slot(metadata, startup_slot)) {
-    dixpas::ProjectState startup_project{};
-    if (g_storage.load_preset(startup_slot, startup_project) == dixpas::StorageStatus::Ok) {
-      g_app.load_project(startup_project);
-      metadata.last_loaded_slot = startup_slot;
-      g_storage.save_metadata(metadata);
-      char value[32];
-      snprintf(value, sizeof(value), "Loaded P%u", static_cast<unsigned>(startup_slot + 1U));
-      g_ui.set_startup_message(value);
-      loaded_preset = true;
-    } else {
-      g_ui.set_startup_message("Preset Error");
-    }
-  }
-
-  g_ui.attach_storage(g_storage);
-  if (!loaded_preset && !dixpas::StorageEngine::preferred_startup_slot(metadata, startup_slot)) {
-    g_ui.set_startup_message("Default Project");
-  }
+  g_ui.set_startup_message(startup.message);
 }
 #endif
 
@@ -142,7 +119,7 @@ void setup() {
   digitalWrite(dixpas::hardware::kGateOutAPin, LOW);
   digitalWrite(dixpas::hardware::kGateOutBPin, LOW);
 
-  g_app.seed_demo_project();
+  g_app.load_default_project();
   Serial1.begin(31250);
   const bool oled_ready = g_oled_display.begin();
   g_ui_hardware.begin();

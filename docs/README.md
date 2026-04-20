@@ -21,12 +21,13 @@ Ordre de lecture recommandé :
 11. `engineering/DIX_PAS_ALIMENTATION_REFERENCE.md`
 12. `engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
 13. `engineering/DIX_PAS_AUDIT_PRE_ACHAT_2026-04-20.md`
-14. `engineering/DIX_PAS_PIN_MAP_DRAFT.md`
-15. `engineering/DIX_PAS_UI_STATE_MACHINE.md`
-16. `engineering/DIX_PAS_PRESET_FORMAT.md`
-17. `../bom/DIX_PAS_BOM_v0.md`
-18. `../bom/DIX_PAS_BOM_ACHAT_COEUR_V1.md`
-19. `product/DIX_PAS_TESTS_ACCEPTATION_V1.md`
+14. `engineering/DIX_PAS_AUDIT_LOGICIEL_PRE_MATERIEL_2026-04-20.md`
+15. `engineering/DIX_PAS_PIN_MAP_DRAFT.md`
+16. `engineering/DIX_PAS_UI_STATE_MACHINE.md`
+17. `engineering/DIX_PAS_PRESET_FORMAT.md`
+18. `../bom/DIX_PAS_BOM_v0.md`
+19. `../bom/DIX_PAS_BOM_ACHAT_COEUR_V1.md`
+20. `product/DIX_PAS_TESTS_ACCEPTATION_V1.md`
 
 Règle simple :
 

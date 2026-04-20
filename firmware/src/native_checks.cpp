@@ -8,6 +8,7 @@
 #include "dixpas/fram_i2c_backend.hpp"
 #include "dixpas/music_scales.hpp"
 #include "dixpas/oled_display.hpp"
+#include "dixpas/startup_logic.hpp"
 #include "dixpas/storage_engine.hpp"
 #include "dixpas/ui_controller.hpp"
 #include "dixpas/ui_scanner.hpp"
@@ -259,6 +260,54 @@ bool test_storage_selects_preferred_startup_slot(CheckContext& ctx) {
   return true;
 }
 
+bool test_startup_falls_back_to_default_without_storage(CheckContext& ctx) {
+  App app;
+  app.seed_demo_project();
+
+  const StartupSelectionResult result =
+      apply_startup_project(app, nullptr, false, true);
+
+  CHECK_TRUE(ctx, result.storage_available == false);
+  CHECK_TRUE(ctx, result.fell_back_to_default);
+  CHECK_TRUE(ctx, strstr(result.message, "No FRAM") != nullptr);
+  CHECK_EQ(ctx, 8U, app.project().track_a.length);
+  CHECK_EQ(ctx, 8U, app.project().track_b.length);
+  CHECK_EQ(ctx, 1U, app.project().track_a.midi_channel);
+  CHECK_EQ(ctx, 2U, app.project().track_b.midi_channel);
+  return true;
+}
+
+bool test_startup_uses_last_saved_when_last_loaded_is_invalid(CheckContext& ctx) {
+  App app;
+  MemoryStorageBackend backend;
+  StorageEngine storage(backend);
+
+  ProjectState saved = app.project();
+  saved.track_a.length = 5U;
+  saved.track_b.length = 9U;
+  saved.track_a.midi_channel = 3U;
+  saved.track_b.midi_channel = 6U;
+  saved.root_note = 7U;
+  saved.scale_id = 4U;
+  saved.machine_mode = MachineMode::Chain20;
+  CHECK_EQ(ctx, StorageStatus::Ok, storage.save_preset(4U, saved));
+
+  StorageMetadataV1 metadata = StorageEngine::build_default_metadata();
+  metadata.last_loaded_slot = 2U;
+  metadata.last_saved_slot = 4U;
+  CHECK_EQ(ctx, StorageStatus::Ok, storage.save_metadata(metadata));
+
+  const StartupSelectionResult result =
+      apply_startup_project(app, &storage, true, true);
+
+  CHECK_TRUE(ctx, result.loaded_preset);
+  CHECK_TRUE(ctx, !result.fell_back_to_default);
+  CHECK_EQ(ctx, 4U, result.loaded_slot);
+  CHECK_TRUE(ctx, strstr(result.message, "Loaded P5") != nullptr);
+  CHECK_TRUE(ctx, projects_equal(saved, app.project()));
+  return true;
+}
+
 bool test_fram_i2c_backend_roundtrip_and_chunking(CheckContext& ctx) {
   MockFramI2cPort port;
   FramI2cBackend backend(port);
@@ -502,6 +551,97 @@ bool test_chain20_uses_single_visible_midi_channel(CheckContext& ctx) {
   return true;
 }
 
+bool test_hardware_test_uses_chain20_channel(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+
+  ProjectState project = app.project();
+  project.machine_mode = MachineMode::Chain20;
+  project.track_a.midi_channel = 4U;
+  project.track_b.midi_channel = 11U;
+  app.load_project(project);
+  ui.reset();
+
+  ui.set_shift_held(true);
+  ui.press_play();
+  ui.set_shift_held(false);
+
+  CHECK_EQ(ctx, UiPage::HardwareTest, ui.page());
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "Ch04") != nullptr);
+
+  uint8_t byte = 0U;
+  bool found_note_on = false;
+  while (app.pop_midi_byte(byte)) {
+    if (byte == 0x93U) {
+      found_note_on = true;
+      break;
+    }
+  }
+  CHECK_TRUE(ctx, found_note_on);
+
+  ui.update(500U);
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "Ch04") != nullptr);
+  bool found_note_off = false;
+  while (app.pop_midi_byte(byte)) {
+    if (byte == 0x83U) {
+      found_note_off = true;
+      break;
+    }
+  }
+  CHECK_TRUE(ctx, found_note_off);
+
+  return true;
+}
+
+bool test_chain20_routes_single_channel_and_split_gates(CheckContext& ctx) {
+  App app;
+  ProjectState project{};
+  project.machine_mode = MachineMode::Chain20;
+  project.play_mode = PlayMode::Forward;
+  project.track_a.length = 1U;
+  project.track_b.length = 1U;
+  project.track_a.midi_channel = 4U;
+  project.track_b.midi_channel = 9U;
+  project.track_a.steps[0] = Step(true, 0U, 100U, 1U, 50U, 100U);
+  project.track_b.steps[0] = Step(true, 2U, 100U, 1U, 50U, 96U);
+  app.load_project(project);
+
+  app.start();
+
+  EngineEvent event{};
+  CHECK_TRUE(ctx, app.pop_routed_event(event));
+  CHECK_EQ(ctx, EventType::GateHigh, event.type);
+  CHECK_EQ(ctx, TrackId::A, event.track);
+  CHECK_TRUE(ctx, app.pop_routed_event(event));
+  CHECK_EQ(ctx, EventType::NoteOn, event.type);
+  CHECK_EQ(ctx, 4U, event.midi_channel);
+  CHECK_EQ(ctx, TrackId::A, event.track);
+  CHECK_TRUE(ctx, app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::B));
+
+  for (uint8_t index = 0U; index < kTicksPerStep; ++index) {
+    app.tick_internal();
+  }
+
+  bool saw_track_b_note_on = false;
+  bool saw_track_b_gate_high = false;
+  while (app.pop_routed_event(event)) {
+    if (event.track == TrackId::B && event.type == EventType::GateHigh) {
+      saw_track_b_gate_high = true;
+    }
+    if (event.track == TrackId::B && event.type == EventType::NoteOn) {
+      CHECK_EQ(ctx, 4U, event.midi_channel);
+      saw_track_b_note_on = true;
+    }
+  }
+
+  CHECK_TRUE(ctx, saw_track_b_gate_high);
+  CHECK_TRUE(ctx, saw_track_b_note_on);
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, app.gate_state(TrackId::B));
+  return true;
+}
+
 bool test_shift_reset_toggles_diagnostic_mode(CheckContext& ctx) {
   App app;
   UiController ui(app);
@@ -612,6 +752,10 @@ int main() {
       {"scale_registry_and_quantization", test_scale_registry_and_quantization},
       {"storage_roundtrip_preserves_project", test_storage_roundtrip_preserves_project},
       {"storage_selects_preferred_startup_slot", test_storage_selects_preferred_startup_slot},
+      {"startup_falls_back_to_default_without_storage",
+       test_startup_falls_back_to_default_without_storage},
+      {"startup_uses_last_saved_when_last_loaded_is_invalid",
+       test_startup_uses_last_saved_when_last_loaded_is_invalid},
       {"fram_i2c_backend_roundtrip_and_chunking", test_fram_i2c_backend_roundtrip_and_chunking},
       {"ui_scanner_emits_mode_short_and_long", test_ui_scanner_emits_mode_short_and_long},
       {"oled_display_initializes_and_renders", test_oled_display_initializes_and_renders},
@@ -627,6 +771,9 @@ int main() {
        test_ui_can_switch_machine_mode_from_global_edit},
       {"chain20_uses_single_visible_midi_channel",
        test_chain20_uses_single_visible_midi_channel},
+      {"hardware_test_uses_chain20_channel", test_hardware_test_uses_chain20_channel},
+      {"chain20_routes_single_channel_and_split_gates",
+       test_chain20_routes_single_channel_and_split_gates},
       {"shift_reset_toggles_diagnostic_mode", test_shift_reset_toggles_diagnostic_mode},
       {"diagnostic_shows_last_midi_input_event", test_diagnostic_shows_last_midi_input_event},
       {"shift_play_toggles_hardware_test_and_emits_outputs",
