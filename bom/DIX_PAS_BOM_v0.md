@@ -39,7 +39,7 @@ Hypotheses retenues :
 | Sous-système | Qte | Reference recommandée | Alternative | Remarques |
 | --- | ---: | --- | --- | --- |
 | Carte contrôleur | 1 | Arduino Nano Every | Arduino Nano Every with headers | Recommandation principale pour la V1 |
-| Buffer partagé MIDI OUT / Gate | 1 | 74HCS125 | 74HC125 | 1 canal MIDI OUT, 2 canaux Gate, 1 canal libre |
+| Buffer partagé MIDI OUT / Gate | 1 | TI SN74HC125N | 74HCS125 SMD | `PDIP-14` recommandé pour proto breadboard, 1 canal MIDI OUT, 2 canaux Gate, 1 libre |
 | Registre a décalage entrée | 5 | 74HC165 | SN74HC165 | Jusqu'à 40 entrées utilisateur |
 | Registre a décalage sortie | 3 | 74HC595 | SN74HC595 | Jusqu'à 24 sorties LEDs |
 | Condensateurs de decouplage | 10 | 100 nF ceramique | Equivalent | 1 par CI minimum |

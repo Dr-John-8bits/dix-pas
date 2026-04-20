@@ -284,6 +284,29 @@ Impact :
 
 ---
 
+## DEC-016 - Étages MIDI et Gate V1
+
+Décision :
+
+- le `MIDI IN` de la V1 repose sur une entrée opto-isolée à base de **6N138**
+- le `MIDI OUT` et les `Gate Out A/B` reposent sur un **buffer partagé de la famille 74HC125**
+- les `Gate Out` sont en `5 V`, `active high`, avec résistance série et pull-down
+
+Raison :
+
+- architecture simple et cohérente avec le `Nano Every`
+- mutualisation d'un même buffer logique pour limiter les composants redondants
+- bonne compatibilité avec un premier montage breadboard puis un circuit plus propre
+
+Impact :
+
+- la BOM part d'un sous-ensemble `6N138 + 74HC125`
+- le document de référence est `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
+- la validation finale de ces étages se fera sur breadboard avant gel complet du câblage
+- l'achat recommandé pour le proto est `SN74HC125N` en `PDIP-14`
+
+---
+
 ## 2. Règle de changement
 
 Une decision de cette liste ne doit être rouverte que si :

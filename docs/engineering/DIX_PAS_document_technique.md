@@ -135,8 +135,9 @@ Alternative acceptable :
 
 Note :
 
-- le schéma exact de l'étage MIDI IN devra être verrouille avec les bonnes valeurs de résistances et de diode selon l'opto retenu
 - il faut absolument conserver une implémentation propre et isolée, pas un pseudo-MIDI simplifié
+- la référence de travail V1 est figée dans `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
+- cette référence retient `220 Ω` en série, `10 kΩ` de pull-up, `4.7 kΩ` de réglage et `1N4148` en antiparallèle
 
 ### 5.2 MIDI OUT
 
@@ -154,9 +155,20 @@ Recommandation de robustesse :
 
 Composant recommandé :
 
-- **74HCS125** ou **74HC125**
+- **74HC125**
+
+Alternative compacte acceptable :
+
+- **74HCS125**
 
 Cela protège mieux le microcontrôleur et permet de mutualiser le même circuit logique avec les `Gate Out`.
+
+Référence de travail V1 :
+
+- `TX UART` -> `74HC125` -> `220 Ω` -> `DIN pin 5`
+- pour un proto breadboard, l'achat recommandé est `SN74HC125N` en `PDIP-14`
+- `+5 V` -> `220 Ω` -> `DIN pin 4`
+- détails dans `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
 
 ### 5.3 Messages MIDI à gérer
 
@@ -188,6 +200,12 @@ Direction recommandée pour la V1 :
 Référence détaillée des étages :
 
 - `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
+
+Référence de travail V1 :
+
+- `D5` -> `74HC125` -> `220 Ω` -> `Gate Out A`
+- `D6` -> `74HC125` -> `220 Ω` -> `Gate Out B`
+- `100 kΩ` de pull-down sur chaque sortie
 
 Comportement fonctionnel recommandé :
 

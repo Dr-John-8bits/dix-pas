@@ -257,6 +257,13 @@ Connectique recommandée :
 
 - `2 x jack mono 3.5 mm`
 
+Référence d'ingénierie retenue :
+
+- `MIDI IN` opto-isolé à base de `6N138`
+- `MIDI OUT` bufferisé via un buffer partagé de la famille `74HC125`
+- `Gate Out A/B` bufferisées via le même buffer partagé
+- détails dans `docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md`
+
 ---
 
 ## 7. Matériel figé
@@ -269,6 +276,7 @@ Les choix hardware valides pour la V1 sont :
 - **MIDI** : DIN 5 broches
 - **Gate** : 2 sorties 5 V bufferisées
 - **alimentation** : entrée externe `9 V DC`, `centre positif`, conversion dédiée vers `5 V`
+- **interfaces électriques V1** : `6N138` pour `MIDI IN`, buffer partagé famille `74HC125` pour `MIDI OUT` et `Gate`
 
 Pourquoi le **Nano Every** est retenu :
 

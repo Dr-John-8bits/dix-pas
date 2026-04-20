@@ -167,7 +167,8 @@ Contrainte :
 
 Recommendation :
 
-- buffer type `74HCS125` recommandé
+- buffer type `74HC125` recommandé pour le proto breadboard
+- `74HCS125` acceptable en variante compacte plus tard
 - `1` canal pour `MIDI OUT`
 - `2` canaux pour `Gate Out A/B`
 

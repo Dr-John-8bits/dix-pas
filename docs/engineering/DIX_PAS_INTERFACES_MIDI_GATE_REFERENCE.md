@@ -28,11 +28,19 @@ Principes :
 
 Décision d'architecture :
 
-- un **seul 74HCS125** est retenu comme buffer partagé
+- un **seul buffer partagé de la famille 74HC125** est retenu
 - usages prévus :
   - `1` canal pour `MIDI OUT`
   - `2` canaux pour `Gate Out A/B`
   - `1` canal restant libre
+
+Choix d'achat recommandé pour le proto breadboard :
+
+- **SN74HC125N** en `PDIP-14`
+
+Alternative compacte acceptable :
+
+- `74HCS125` en `SMD` si un montage plus dense est visé plus tard
 
 Cette topologie est une **recommandation d'ingénierie** à partir :
 
@@ -48,7 +56,7 @@ Cette topologie est une **recommandation d'ingénierie** à partir :
 Chaîne logique :
 
 `D1 / TX`
--> `1 canal 74HCS125`
+-> `1 canal 74HC125`
 -> résistance série `220 Ω`
 -> `DIN pin 5`
 
@@ -69,7 +77,7 @@ Références de connecteur :
 Valeurs de référence :
 
 - `2 x 220 Ω` pour le current loop MIDI OUT
-- `1 x 100 nF` au plus près du `74HCS125`
+- `1 x 100 nF` au plus près du buffer partagé
 
 ### 3.3 Pourquoi cette solution
 
@@ -137,7 +145,7 @@ Important :
 Chaque sortie suit la même structure :
 
 `D5 ou D6`
--> `1 canal 74HCS125`
+-> `1 canal 74HC125`
 -> résistance série `220 Ω`
 -> tip jack `3.5 mm`
 
@@ -188,10 +196,10 @@ Résumé minimal :
 
 - `MIDI OUT`
   - `+5 V` -> `220 Ω` -> `DIN 4`
-  - `TX` -> `74HCS125` -> `220 Ω` -> `DIN 5`
+  - `TX` -> `74HC125` -> `220 Ω` -> `DIN 5`
 
 - `Gate A/B`
-  - `GPIO` -> `74HCS125` -> `220 Ω` -> jack tip
+  - `GPIO` -> `74HC125` -> `220 Ω` -> jack tip
   - `100 kΩ` pull-down vers masse
 
 ## 7. Impact sur la BOM
@@ -199,7 +207,7 @@ Résumé minimal :
 Cette référence implique au minimum :
 
 - `1 x 6N138`
-- `1 x 74HCS125`
+- `1 x 74HC125` de référence d'achat proto
 - `3 x 220 Ω` pour MIDI
 - `2 x 220 Ω` pour Gate
 - `2 x 100 kΩ` pour Gate
