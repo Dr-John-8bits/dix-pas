@@ -102,6 +102,7 @@ class StorageEngine {
   StorageStatus save_metadata(const StorageMetadataV1& metadata);
   StorageStatus load_metadata(StorageMetadataV1& metadata) const;
   static StorageMetadataV1 build_default_metadata();
+  static bool preferred_startup_slot(const StorageMetadataV1& metadata, uint8_t& slot);
 
   static uint16_t crc16_ccitt(const uint8_t* data, size_t size);
 

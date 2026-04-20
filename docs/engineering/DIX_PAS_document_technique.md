@@ -274,6 +274,12 @@ Le rôle de l'écran est d'afficher :
 - la valeur en cours
 - l'état global lecture / tempo / synchro
 
+Au boot, l'écran affiche :
+
+- `DIX PAS`
+- `by Dr. John`
+- la version firmware au format `aa.mm.jj.itération`
+
 ---
 
 ## 7. Stratégie d'extension des E/S

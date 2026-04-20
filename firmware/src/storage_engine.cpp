@@ -163,6 +163,20 @@ StorageMetadataV1 StorageEngine::build_default_metadata() {
   return metadata;
 }
 
+bool StorageEngine::preferred_startup_slot(const StorageMetadataV1& metadata, uint8_t& slot) {
+  if (metadata.last_loaded_slot < kStoragePresetSlotCount) {
+    slot = metadata.last_loaded_slot;
+    return true;
+  }
+
+  if (metadata.last_saved_slot < kStoragePresetSlotCount) {
+    slot = metadata.last_saved_slot;
+    return true;
+  }
+
+  return false;
+}
+
 uint16_t StorageEngine::crc16_ccitt(const uint8_t* data, size_t size) {
   uint16_t crc = 0xFFFFU;
   for (size_t index = 0; index < size; ++index) {

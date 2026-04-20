@@ -48,6 +48,8 @@ class UiController {
   explicit UiController(App& app, StorageEngine* storage = nullptr);
 
   void reset();
+  void enter_boot_page();
+  void leave_boot_page();
   void update(uint16_t elapsed_ms);
   void attach_storage(StorageEngine& storage);
 

@@ -106,6 +106,18 @@ void UiController::reset() {
   restore_preset_slot_from_metadata();
 }
 
+void UiController::enter_boot_page() {
+  page_ = UiPage::Boot;
+  overlay_.active = false;
+  overlay_timeout_ms_ = 0U;
+}
+
+void UiController::leave_boot_page() {
+  if (page_ == UiPage::Boot) {
+    page_ = UiPage::Home;
+  }
+}
+
 void UiController::update(uint16_t elapsed_ms) {
   if (!overlay_.active) {
     return;
@@ -444,10 +456,9 @@ void UiController::restore_preset_slot_from_metadata() {
     return;
   }
 
-  if (metadata.last_loaded_slot < kStoragePresetSlotCount) {
-    preset_slot_ = metadata.last_loaded_slot;
-  } else if (metadata.last_saved_slot < kStoragePresetSlotCount) {
-    preset_slot_ = metadata.last_saved_slot;
+  uint8_t slot = 0U;
+  if (StorageEngine::preferred_startup_slot(metadata, slot)) {
+    preset_slot_ = slot;
   }
 }
 

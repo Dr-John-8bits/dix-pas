@@ -66,6 +66,8 @@ Capacités déjà implémentées :
 - rendu d'un écran texte simulant l'OLED
 - adaptateur OLED I2C matériel `SSD1306` prêt pour l'Arduino
 - rendu OLED paginé sans framebuffer complet pour économiser la RAM du `Nano Every`
+- splash de boot avec branding et version firmware
+- tentative de chargement automatique du dernier preset connu au démarrage
 - boot Arduino en état `STOP`, sans auto-play
 
 Fondation générative déjà posée :
@@ -97,6 +99,7 @@ Le runner `native_checks` valide actuellement :
 - roundtrip de stockage preset
 - roundtrip `FRAM I2C` mocké avec validation du chunking
 - initialisation et rendu `OLED` mockés
+- écran de boot et version firmware
 - `UiScanner` pour `MODE short` / `MODE long`
 - clock MIDI externe
 - application / mutation des slots génératifs depuis l'UI

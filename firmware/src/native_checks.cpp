@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "dixpas/app.hpp"
+#include "dixpas/firmware_info.hpp"
 #include "dixpas/fram_i2c_backend.hpp"
 #include "dixpas/music_scales.hpp"
 #include "dixpas/oled_display.hpp"
@@ -241,6 +242,23 @@ bool test_storage_roundtrip_preserves_project(CheckContext& ctx) {
   return true;
 }
 
+bool test_storage_selects_preferred_startup_slot(CheckContext& ctx) {
+  StorageMetadataV1 metadata = StorageEngine::build_default_metadata();
+  uint8_t slot = 0U;
+
+  CHECK_TRUE(ctx, !StorageEngine::preferred_startup_slot(metadata, slot));
+
+  metadata.last_saved_slot = 4U;
+  CHECK_TRUE(ctx, StorageEngine::preferred_startup_slot(metadata, slot));
+  CHECK_EQ(ctx, 4U, slot);
+
+  metadata.last_loaded_slot = 2U;
+  metadata.last_saved_slot = 6U;
+  CHECK_TRUE(ctx, StorageEngine::preferred_startup_slot(metadata, slot));
+  CHECK_EQ(ctx, 2U, slot);
+  return true;
+}
+
 bool test_fram_i2c_backend_roundtrip_and_chunking(CheckContext& ctx) {
   MockFramI2cPort port;
   FramI2cBackend backend(port);
@@ -315,6 +333,24 @@ bool test_oled_display_initializes_and_renders(CheckContext& ctx) {
 
   CHECK_TRUE(ctx, display.render(frame));
   CHECK_TRUE(ctx, port.saw_non_zero_pixels());
+  return true;
+}
+
+bool test_boot_screen_renders_branding_and_version(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+  DisplayEngine display;
+  DisplayFrame frame{};
+
+  ui.enter_boot_page();
+  display.render(app, ui, frame);
+
+  CHECK_TRUE(ctx, strstr(frame.lines[1], "DIX PAS") != nullptr);
+  CHECK_TRUE(ctx, strstr(frame.lines[2], "by Dr. John") != nullptr);
+  CHECK_TRUE(ctx, strstr(frame.lines[3], kFirmwareVersion) != nullptr);
+
+  ui.leave_boot_page();
+  CHECK_EQ(ctx, UiPage::Home, ui.page());
   return true;
 }
 
@@ -394,9 +430,12 @@ int main() {
   const TestCase tests[] = {
       {"scale_registry_and_quantization", test_scale_registry_and_quantization},
       {"storage_roundtrip_preserves_project", test_storage_roundtrip_preserves_project},
+      {"storage_selects_preferred_startup_slot", test_storage_selects_preferred_startup_slot},
       {"fram_i2c_backend_roundtrip_and_chunking", test_fram_i2c_backend_roundtrip_and_chunking},
       {"ui_scanner_emits_mode_short_and_long", test_ui_scanner_emits_mode_short_and_long},
       {"oled_display_initializes_and_renders", test_oled_display_initializes_and_renders},
+      {"boot_screen_renders_branding_and_version",
+       test_boot_screen_renders_branding_and_version},
       {"external_midi_clock_advances_transport", test_external_midi_clock_advances_transport},
       {"ui_generates_and_mutates_slots_from_global_edit",
        test_ui_generates_and_mutates_slots_from_global_edit},

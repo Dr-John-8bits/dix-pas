@@ -21,6 +21,7 @@ namespace {
 #if defined(ARDUINO)
 constexpr uint8_t kGateOutAPin = 5;
 constexpr uint8_t kGateOutBPin = 6;
+constexpr uint16_t kBootSplashDurationMs = 1500U;
 
 dixpas::App g_app;
 dixpas::WireFramI2cPort g_fram_port;
@@ -38,6 +39,8 @@ dixpas::PanelLedDriver g_panel_led_driver;
 dixpas::PanelLedFrame g_panel_led_frame{};
 uint32_t g_last_tick_micros = 0;
 uint32_t g_last_ui_update_millis = 0;
+uint32_t g_boot_deadline_millis = 0;
+bool g_boot_active = true;
 
 void flush_midi_bytes() {
   uint8_t byte = 0;
@@ -87,6 +90,30 @@ void process_ui_inputs() {
     dixpas::dispatch_ui_event(g_ui, event);
   }
 }
+
+void initialize_storage_and_startup_project() {
+  if (!g_fram_backend.begin()) {
+    return;
+  }
+
+  dixpas::StorageMetadataV1 metadata{};
+  if (g_storage.load_metadata(metadata) != dixpas::StorageStatus::Ok) {
+    metadata = dixpas::StorageEngine::build_default_metadata();
+    g_storage.save_metadata(metadata);
+  }
+
+  uint8_t startup_slot = 0U;
+  if (dixpas::StorageEngine::preferred_startup_slot(metadata, startup_slot)) {
+    dixpas::ProjectState startup_project{};
+    if (g_storage.load_preset(startup_slot, startup_project) == dixpas::StorageStatus::Ok) {
+      g_app.load_project(startup_project);
+      metadata.last_loaded_slot = startup_slot;
+      g_storage.save_metadata(metadata);
+    }
+  }
+
+  g_ui.attach_storage(g_storage);
+}
 #endif
 
 }  // namespace
@@ -99,25 +126,20 @@ void setup() {
   digitalWrite(kGateOutAPin, LOW);
   digitalWrite(kGateOutBPin, LOW);
 
+  g_app.seed_demo_project();
   Serial1.begin(31250);
-  const bool storage_ready = g_fram_backend.begin();
   g_oled_display.begin();
   g_ui_hardware.begin();
   g_panel_led_driver.begin();
-
-  if (storage_ready) {
-    dixpas::StorageMetadataV1 metadata{};
-    if (g_storage.load_metadata(metadata) != dixpas::StorageStatus::Ok) {
-      g_storage.save_metadata(dixpas::StorageEngine::build_default_metadata());
-    }
-    g_ui.attach_storage(g_storage);
-  }
-
-  g_app.seed_demo_project();
   g_ui.reset();
+  initialize_storage_and_startup_project();
+  g_ui.reset();
+  g_ui.enter_boot_page();
   g_ui_scanner.reset();
   g_last_tick_micros = micros();
   g_last_ui_update_millis = millis();
+  g_boot_deadline_millis = g_last_ui_update_millis + kBootSplashDurationMs;
+  g_boot_active = true;
   sync_gate_outputs();
   sync_display();
   sync_panel_leds();
@@ -129,6 +151,21 @@ void loop() {
     if (byte_read >= 0) {
       g_app.receive_midi_byte(static_cast<uint8_t>(byte_read));
     }
+  }
+
+  if (g_boot_active) {
+    const uint32_t now = millis();
+    if (static_cast<int32_t>(now - g_boot_deadline_millis) < 0) {
+      flush_midi_bytes();
+      sync_gate_outputs();
+      sync_display();
+      sync_panel_leds();
+      return;
+    }
+
+    g_boot_active = false;
+    g_ui.leave_boot_page();
+    g_last_ui_update_millis = now;
   }
 
   process_ui_inputs();

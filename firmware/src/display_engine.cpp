@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dixpas/firmware_info.hpp"
 #include "dixpas/music_scales.hpp"
 
 namespace dixpas {
@@ -90,6 +91,28 @@ void clear_frame(DisplayFrame& frame) {
   for (size_t line = 0; line < kDisplayLineCount; ++line) {
     frame.lines[line][0] = '\0';
   }
+}
+
+void center_line(char* dst, const char* text) {
+  if (dst == nullptr) {
+    return;
+  }
+
+  if (text == nullptr) {
+    dst[0] = '\0';
+    return;
+  }
+
+  const size_t length = strlen(text);
+  if (length >= kDisplayLineWidth) {
+    copy_line(dst, text);
+    return;
+  }
+
+  const size_t left_padding = (kDisplayLineWidth - length) / 2U;
+  memset(dst, ' ', kDisplayLineWidth);
+  memcpy(dst + left_padding, text, length);
+  dst[kDisplayLineWidth] = '\0';
 }
 
 void render_status_line(const App& app, char* dst) {
@@ -191,8 +214,10 @@ void DisplayEngine::render(const App& app, const UiController& ui, DisplayFrame&
   clear_frame(frame);
 
   if (ui.page() == UiPage::Boot) {
-    copy_line(frame.lines[0], "DIX PAS");
-    copy_line(frame.lines[1], "Initialisation");
+    frame.lines[0][0] = '\0';
+    center_line(frame.lines[1], "DIX PAS");
+    center_line(frame.lines[2], "by Dr. John");
+    center_line(frame.lines[3], kFirmwareVersion);
     return;
   }
 

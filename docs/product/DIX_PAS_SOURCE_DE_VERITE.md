@@ -197,6 +197,12 @@ L'écran doit afficher immédiatement l'action en cours quand l'utilisateur :
 
 Après inactivité, l'écran revient automatiquement à une vue principale simple.
 
+Au démarrage, l'écran affiche un court splash :
+
+- `DIX PAS`
+- `by Dr. John`
+- la version firmware au format `aa.mm.jj.itération`
+
 ---
 
 ## 6. Interfaces externes figées
@@ -268,6 +274,13 @@ La sauvegarde retenue est :
 Le stockage utilisé :
 
 - **FRAM externe**
+
+Comportement au démarrage :
+
+- la machine tente de recharger le dernier preset connu
+- priorité au dernier preset chargé
+- sinon dernier preset sauvegardé
+- sinon projet par défaut de secours
 
 ---
 
