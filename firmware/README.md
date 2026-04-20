@@ -26,6 +26,8 @@ Modules actuellement posés :
 - `StorageEngine`
 - `UiController`
 - `UiScanner`
+- `UiHardware`
+- `PanelLedDriver`
 - `DisplayEngine`
 
 Capacités déjà implémentées :
@@ -35,7 +37,9 @@ Capacités déjà implémentées :
 - mode `Dual`
 - mode `Chain 20`
 - play modes `Forward`, `Reverse`, `PingPong`, `Random`
+- gammes globales `Major`, `Minor`, `Harmonic Minor`, `Pentatonic Major`, `Pentatonic Minor`, `Dorian`, `Phrygian`, `Lydian`, `Mixolydian`, `Locrian`, `Whole Tone`, `Chromatic`
 - probabilité par pas
+- quantification systématique sur la gamme active, sans micro-tonalité en V1
 - ratchet `x1` à `x3`
 - gate length par pas
 - velocity par pas
@@ -47,9 +51,12 @@ Capacités déjà implémentées :
 - sauvegarde / chargement de presets via slots fixes + `CRC16`
 - logique UI pour sélection de pas, rangée 3, encodeur, global edit
 - scanner d'entrées hardware-agnostique avec debounce, appui court / long et encodeur quadrature
+- backend Arduino pour lecture encodeur direct + chaîne `74HC165`
+- driver Arduino pour la façade LEDs via chaîne `74HC595`
 - chargement d'un preset via `encoder button` sur `Preset`
 - sauvegarde explicite via `SHIFT + encoder button` sur `Preset`
 - rendu d'un écran texte simulant l'OLED
+- boot Arduino en état `STOP`, sans auto-play
 
 Builds vérifiés :
 

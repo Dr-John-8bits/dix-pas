@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dixpas/music_scales.hpp"
+
 namespace dixpas {
 
 namespace {
@@ -70,27 +72,6 @@ const char* play_mode_label(PlayMode mode) {
   }
 }
 
-const char* scale_label(uint8_t scale_id) {
-  switch (scale_id % 4U) {
-    case 1:
-      return "Minor";
-    case 2:
-      return "Penta";
-    case 3:
-      return "Chrom";
-    case 0:
-    default:
-      return "Major";
-  }
-}
-
-const char* note_name(uint8_t note) {
-  static constexpr const char* kNoteNames[12] = {
-      "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
-  };
-  return kNoteNames[note % 12U];
-}
-
 void copy_line(char* dst, const char* src) {
   strncpy(dst, src, kDisplayLineWidth);
   dst[kDisplayLineWidth] = '\0';
@@ -154,7 +135,7 @@ void render_home_footer(const App& app, const UiController& ui, char* dst) {
     format_line(dst, "Global %s", global_target_label(ui.global_target()));
   } else if (app.project().machine_mode == MachineMode::Chain20) {
     format_line(dst, "Root:%s %s", note_name(app.project().root_note),
-                scale_label(app.project().scale_id));
+                scale_short_name(app.project().scale_id));
   }
 }
 
@@ -173,7 +154,7 @@ void render_global_value_line(const App& app, const UiController& ui, char* dst)
       format_line(dst, "Root %s", note_name(project.root_note));
       break;
     case GlobalTarget::Scale:
-      format_line(dst, "Scale %s", scale_label(project.scale_id));
+      format_line(dst, "Scale %s", scale_short_name(project.scale_id));
       break;
     case GlobalTarget::PlayMode:
       format_line(dst, "Play %s", play_mode_label(project.play_mode));

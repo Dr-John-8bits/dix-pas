@@ -102,6 +102,12 @@ Chaque pas stocke au minimum :
 - gate length
 - velocity
 
+Règle de quantification :
+
+- chaque step est toujours quantized sur la gamme globale active
+- la V1 ne gère pas de micro-tonalité
+- la gamme `Chromatic` permet d'accéder aux `12` demi-tons standards
+
 ### 4.3 Priorité d'édition
 
 La priorité d'usage de la machine est :
@@ -129,6 +135,29 @@ La V1 doit inclure :
 - Reverse
 - Ping-pong
 - Random
+
+### 4.6 Gammes globales V1
+
+La V1 supporte les gammes suivantes :
+
+- Major
+- Minor
+- Harmonic Minor
+- Pentatonic Major
+- Pentatonic Minor
+- Dorian
+- Phrygian
+- Lydian
+- Mixolydian
+- Locrian
+- Whole Tone
+- Chromatic
+
+Règle retenue :
+
+- pas de doublon de nom pour une même structure de gamme
+- `Aeolian` n'est pas exposée comme nom séparé dans la V1
+- le nom canonique retenu est `Minor`
 
 ---
 

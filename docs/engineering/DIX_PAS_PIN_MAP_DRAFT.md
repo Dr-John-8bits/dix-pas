@@ -80,6 +80,30 @@ Entrees cibles :
 
 Le premier jet de firmware peut laisser l'encodeur sur GPIO directs et les autres boutons sur la chaine `74HC165`.
 
+### 4.1 Mapping logique firmware de la chaîne `74HC165`
+
+Le firmware actuel suppose l'ordre logique suivant sur les `40` entrées de la chaîne :
+
+- bits `0..9` : rangée piste A, pas `1..10`
+- bits `10..19` : rangée piste B, pas `1..10`
+- bits `20..29` : rangée 3, pas `1..10`
+- bit `30` : `PLAY`
+- bit `31` : `STOP`
+- bit `32` : `RESET`
+- bit `33` : `MODE`
+- bit `34` : `SHIFT`
+- bits `35..39` : réservés
+
+Hypothèse retenue dans le code :
+
+- boutons de la chaîne `74HC165` câblés en **actif bas**
+- encodeur sur `D2 / D3`
+- poussoir encodeur sur `D4`, lui aussi en **actif bas**
+
+Important :
+
+- si l'ordre réel des registres ou l'ordre des bits change au schéma, il faudra mettre à jour le mapping dans `firmware/src/ui_hardware.cpp`
+
 ---
 
 ## 5. Bus de sorties
@@ -101,6 +125,29 @@ Sorties cibles :
 - 4 LEDs système
 
 Les LEDs de la troisième rangée restent hors scope V1 si elles ralentissent le projet.
+
+### 5.1 Mapping logique firmware de la chaîne `74HC595`
+
+Le firmware actuel suppose l'ordre logique suivant sur les `24` sorties :
+
+- bits `0..9` : LEDs rangée piste A, pas `1..10`
+- bits `10..19` : LEDs rangée piste B, pas `1..10`
+- bit `20` : LED système `TRANSPORT`
+- bit `21` : LED système `SYNC EXT`
+- bit `22` : LED système `SHIFT`
+- bit `23` : LED système `GLOBAL`
+
+Comportement actuel côté firmware :
+
+- LEDs piste A / B : état des steps actifs, avec sélection toujours visible
+- LED `TRANSPORT` : lecture active
+- LED `SYNC EXT` : clock MIDI externe sélectionnée
+- LED `SHIFT` : `SHIFT` maintenu
+- LED `GLOBAL` : page `GLOBAL_EDIT` active
+
+Important :
+
+- si l'ordre réel des `74HC595` change au schéma, il faudra ajuster le mapping dans `firmware/src/panel_led_driver.cpp`
 
 ---
 

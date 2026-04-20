@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "dixpas/music_scales.hpp"
 #include "dixpas/storage_engine.hpp"
 
 namespace dixpas {
@@ -70,6 +71,15 @@ uint8_t wrap_increment(uint8_t value, uint8_t limit) {
   return static_cast<uint8_t>((value + 1U) % limit);
 }
 
+void format_step_note_value(const ProjectState& project, const Track& track, const Step& step,
+                            char* dst, size_t size) {
+  const uint8_t midi_note =
+      resolve_scale_note(project.root_note, project.scale_id, step.degree, track.octave_offset);
+  const int8_t octave = static_cast<int8_t>(midi_note / 12U) - 1;
+  snprintf(dst, size, "Deg %u %s%d", static_cast<unsigned>(step.degree), note_name(midi_note),
+           static_cast<int>(octave));
+}
+
 }  // namespace
 
 UiController::UiController(App& app, StorageEngine* storage)
@@ -130,8 +140,9 @@ void UiController::press_track_step(TrackId track, uint8_t index) {
   page_ = UiPage::StepEdit;
 
   char value[32];
-  const Step& step = (track == TrackId::A ? project_.track_a.steps[index] : project_.track_b.steps[index]);
-  snprintf(value, sizeof(value), "Degree %u", static_cast<unsigned>(step.degree));
+  const Track& selected_track = (track == TrackId::A ? project_.track_a : project_.track_b);
+  const Step& step = selected_track.steps[index];
+  format_step_note_value(project_, selected_track, step, value, sizeof(value));
   show_step_overlay(track, index, "Selected", value);
 }
 
@@ -442,7 +453,7 @@ void UiController::edit_step_value(int8_t delta) {
         degree = kMaxDegreeValue;
       }
       step.degree = static_cast<uint8_t>(degree);
-      snprintf(value, sizeof(value), "%u", static_cast<unsigned>(step.degree));
+      format_step_note_value(project_, focused_track(), step, value, sizeof(value));
       commit_project(false);
       show_step_overlay(track_focus_, focused_selected_step(), "Degree", value);
       break;
@@ -510,19 +521,19 @@ void UiController::edit_global_value(int8_t delta) {
         root -= 12;
       }
       project_.root_note = static_cast<uint8_t>(root);
-      snprintf(value, sizeof(value), "%u", static_cast<unsigned>(project_.root_note));
+      snprintf(value, sizeof(value), "%s", note_name(project_.root_note));
       break;
     }
     case GlobalTarget::Scale: {
       int16_t scale = static_cast<int16_t>(project_.scale_id) + delta;
       while (scale < 0) {
-        scale += 4;
+        scale += kScaleCount;
       }
-      while (scale >= 4) {
-        scale -= 4;
+      while (scale >= kScaleCount) {
+        scale -= kScaleCount;
       }
       project_.scale_id = static_cast<uint8_t>(scale);
-      snprintf(value, sizeof(value), "%u", static_cast<unsigned>(project_.scale_id));
+      snprintf(value, sizeof(value), "%s", scale_name(project_.scale_id));
       break;
     }
     case GlobalTarget::PlayMode: {

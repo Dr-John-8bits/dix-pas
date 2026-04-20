@@ -1,6 +1,8 @@
 #include "dixpas/app.hpp"
 #include "dixpas/display_engine.hpp"
+#include "dixpas/panel_led_driver.hpp"
 #include "dixpas/storage_engine.hpp"
+#include "dixpas/ui_hardware.hpp"
 #include "dixpas/ui_controller.hpp"
 #include "dixpas/ui_scanner.hpp"
 
@@ -17,7 +19,13 @@ constexpr uint8_t kGateOutAPin = 5;
 constexpr uint8_t kGateOutBPin = 6;
 
 dixpas::App g_app;
+dixpas::UiController g_ui(g_app);
+dixpas::UiScanner g_ui_scanner;
+dixpas::UiHardware g_ui_hardware;
+dixpas::PanelLedDriver g_panel_led_driver;
+dixpas::PanelLedFrame g_panel_led_frame{};
 uint32_t g_last_tick_micros = 0;
+uint32_t g_last_ui_update_millis = 0;
 
 void flush_midi_bytes() {
   uint8_t byte = 0;
@@ -29,6 +37,31 @@ void flush_midi_bytes() {
 void sync_gate_outputs() {
   digitalWrite(kGateOutAPin, g_app.gate_state(dixpas::TrackId::A) ? HIGH : LOW);
   digitalWrite(kGateOutBPin, g_app.gate_state(dixpas::TrackId::B) ? HIGH : LOW);
+}
+
+void sync_panel_leds() {
+  const bool blink_on = ((millis() / 120U) % 2U) == 0U;
+  g_panel_led_driver.render(g_app, g_ui, blink_on, g_panel_led_frame);
+  g_panel_led_driver.write(g_panel_led_frame);
+}
+
+void process_ui_inputs() {
+  const uint32_t now = millis();
+  const uint32_t elapsed = now - g_last_ui_update_millis;
+  if (elapsed == 0U) {
+    return;
+  }
+
+  g_last_ui_update_millis = now;
+  g_ui.update(static_cast<uint16_t>(elapsed > 0xFFFFU ? 0xFFFFU : elapsed));
+
+  const dixpas::UiInputSnapshot snapshot = g_ui_hardware.read_snapshot();
+  g_ui_scanner.update(snapshot, static_cast<uint16_t>(elapsed > 0xFFFFU ? 0xFFFFU : elapsed));
+
+  dixpas::UiInputEvent event;
+  while (g_ui_scanner.pop_event(event)) {
+    dixpas::dispatch_ui_event(g_ui, event);
+  }
 }
 #endif
 
@@ -43,11 +76,16 @@ void setup() {
   digitalWrite(kGateOutBPin, LOW);
 
   Serial1.begin(31250);
+  g_ui_hardware.begin();
+  g_panel_led_driver.begin();
 
   g_app.seed_demo_project();
-  g_app.start();
+  g_ui.reset();
+  g_ui_scanner.reset();
   g_last_tick_micros = micros();
+  g_last_ui_update_millis = millis();
   sync_gate_outputs();
+  sync_panel_leds();
 }
 
 void loop() {
@@ -58,18 +96,27 @@ void loop() {
     }
   }
 
-  if (g_app.clock_source() == dixpas::ClockSource::Internal) {
-    const uint32_t tick_interval = g_app.clock().internal_tick_interval_micros();
-    const uint32_t now = micros();
+  process_ui_inputs();
 
-    while (static_cast<uint32_t>(now - g_last_tick_micros) >= tick_interval) {
-      g_last_tick_micros += tick_interval;
-      g_app.tick_internal();
+  if (g_app.clock_source() == dixpas::ClockSource::Internal) {
+    if (g_app.transport_state() != dixpas::TransportState::Playing) {
+      g_last_tick_micros = micros();
+    } else {
+      const uint32_t tick_interval = g_app.clock().internal_tick_interval_micros();
+      const uint32_t now = micros();
+
+      while (static_cast<uint32_t>(now - g_last_tick_micros) >= tick_interval) {
+        g_last_tick_micros += tick_interval;
+        g_app.tick_internal();
+      }
     }
+  } else {
+    g_last_tick_micros = micros();
   }
 
   flush_midi_bytes();
   sync_gate_outputs();
+  sync_panel_leds();
 }
 
 #else

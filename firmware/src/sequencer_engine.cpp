@@ -1,45 +1,8 @@
 #include "dixpas/sequencer_engine.hpp"
 
+#include "dixpas/music_scales.hpp"
+
 namespace dixpas {
-
-namespace {
-
-constexpr uint8_t kScaleMajor[] = {0, 2, 4, 5, 7, 9, 11};
-constexpr uint8_t kScaleMinorNatural[] = {0, 2, 3, 5, 7, 8, 10};
-constexpr uint8_t kScaleMinorPentatonic[] = {0, 3, 5, 7, 10};
-constexpr uint8_t kScaleChromatic[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-
-struct ScaleView {
-  const uint8_t* intervals = nullptr;
-  uint8_t length = 0;
-
-  constexpr ScaleView() = default;
-  constexpr ScaleView(const uint8_t* intervals_in, uint8_t length_in)
-      : intervals(intervals_in), length(length_in) {}
-};
-
-constexpr ScaleView kScales[] = {
-    {kScaleMajor, static_cast<uint8_t>(sizeof(kScaleMajor) / sizeof(kScaleMajor[0]))},
-    {kScaleMinorNatural,
-     static_cast<uint8_t>(sizeof(kScaleMinorNatural) / sizeof(kScaleMinorNatural[0]))},
-    {kScaleMinorPentatonic,
-     static_cast<uint8_t>(sizeof(kScaleMinorPentatonic) / sizeof(kScaleMinorPentatonic[0]))},
-    {kScaleChromatic, static_cast<uint8_t>(sizeof(kScaleChromatic) / sizeof(kScaleChromatic[0]))},
-};
-
-constexpr uint8_t kBaseMidiNote = 60;  // C4
-
-uint8_t clamp_note(int16_t value) {
-  if (value < 0) {
-    return 0;
-  }
-  if (value > 127) {
-    return 127;
-  }
-  return static_cast<uint8_t>(value);
-}
-
-}  // namespace
 
 SequencerEngine::SequencerEngine() = default;
 
@@ -395,16 +358,8 @@ bool SequencerEngine::passes_probability(uint8_t probability) {
 }
 
 uint8_t SequencerEngine::resolve_note(const Track& track, const Step& step) const {
-  const ScaleView scale = kScales[project_.scale_id % (sizeof(kScales) / sizeof(kScales[0]))];
-  const uint8_t scale_degree = static_cast<uint8_t>(step.degree % scale.length);
-  const uint8_t octave_group = static_cast<uint8_t>(step.degree / scale.length);
-  const int16_t octave_offset = static_cast<int16_t>(track.octave_offset) + octave_group;
-
-  const int16_t note = static_cast<int16_t>(kBaseMidiNote) +
-                       static_cast<int16_t>(project_.root_note % 12U) +
-                       static_cast<int16_t>(scale.intervals[scale_degree]) +
-                       static_cast<int16_t>(octave_offset * 12);
-  return clamp_note(note);
+  return resolve_scale_note(project_.root_note, project_.scale_id, step.degree,
+                            track.octave_offset);
 }
 
 uint8_t SequencerEngine::resolve_chain_midi_channel() const {
