@@ -33,7 +33,6 @@ Direction actuelle :
 │   ├── panel/
 │   ├── pcb/
 │   └── schematics/
-├── notes/
 ├── LICENSE
 ├── LICENSE-CC0.txt
 ├── LICENSING.md
@@ -58,7 +57,6 @@ Point d'entrée recommandé :
 Documents annexes :
 
 - [docs/product/DIX_PAS_specs_fonctionnelles.md](docs/product/DIX_PAS_specs_fonctionnelles.md)
-- [notes/idee.txt](notes/idee.txt)
 - [docs/README.md](docs/README.md)
 
 Règle simple :
