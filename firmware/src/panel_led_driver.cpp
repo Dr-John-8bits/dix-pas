@@ -1,18 +1,24 @@
 #include "dixpas/panel_led_driver.hpp"
 
+#include "dixpas/hardware_config.hpp"
+
 #if defined(ARDUINO)
 #include <Arduino.h>
 #endif
 
 namespace dixpas {
 
-#if defined(ARDUINO)
 namespace {
 
-constexpr uint8_t kShiftRegisterLatchPin = 10;
-constexpr uint8_t kShiftRegisterDataPin = 11;
-constexpr uint8_t kShiftRegisterClockPin = 13;
-constexpr uint8_t kLedShiftRegisterCount = 3;
+bool hardware_test_uses_midi(HardwareTestMode mode) {
+  return mode == HardwareTestMode::Combined || mode == HardwareTestMode::MidiOnly;
+}
+
+bool hardware_test_uses_gate(HardwareTestMode mode) {
+  return mode == HardwareTestMode::Combined || mode == HardwareTestMode::GateOnly;
+}
+
+#if defined(ARDUINO)
 
 void set_output_bit(uint8_t* bytes, uint8_t logical_index, bool value) {
   const uint8_t byte_index = static_cast<uint8_t>(logical_index / 8U);
@@ -27,30 +33,62 @@ void set_output_bit(uint8_t* bytes, uint8_t logical_index, bool value) {
 }
 
 void write_shift_register_bytes(const uint8_t* bytes) {
-  digitalWrite(kShiftRegisterLatchPin, LOW);
-  for (uint8_t index = 0; index < kLedShiftRegisterCount; ++index) {
-    shiftOut(kShiftRegisterDataPin, kShiftRegisterClockPin, MSBFIRST, bytes[index]);
+  digitalWrite(hardware::kLedShiftRegisterLatchPin, LOW);
+  for (uint8_t index = 0; index < hardware::kLedShiftRegisterCount; ++index) {
+    shiftOut(hardware::kLedShiftRegisterDataPin, hardware::kSharedShiftRegisterClockPin,
+             MSBFIRST, bytes[index]);
   }
-  digitalWrite(kShiftRegisterLatchPin, HIGH);
+  digitalWrite(hardware::kLedShiftRegisterLatchPin, HIGH);
 }
 
-}  // namespace
 #endif
+
+}  // namespace
 
 void PanelLedDriver::begin() {
 #if defined(ARDUINO)
-  pinMode(kShiftRegisterLatchPin, OUTPUT);
-  pinMode(kShiftRegisterDataPin, OUTPUT);
-  pinMode(kShiftRegisterClockPin, OUTPUT);
-  digitalWrite(kShiftRegisterLatchPin, HIGH);
-  digitalWrite(kShiftRegisterDataPin, LOW);
-  digitalWrite(kShiftRegisterClockPin, LOW);
+  pinMode(hardware::kLedShiftRegisterLatchPin, OUTPUT);
+  pinMode(hardware::kLedShiftRegisterDataPin, OUTPUT);
+  pinMode(hardware::kSharedShiftRegisterClockPin, OUTPUT);
+  digitalWrite(hardware::kLedShiftRegisterLatchPin, HIGH);
+  digitalWrite(hardware::kLedShiftRegisterDataPin, LOW);
+  digitalWrite(hardware::kSharedShiftRegisterClockPin, LOW);
 #endif
 }
 
 void PanelLedDriver::render(const App& app, const UiController& ui, bool blink_on,
                             PanelLedFrame& frame) const {
   frame = {};
+
+  if (ui.page() == UiPage::Diagnostic) {
+    for (uint8_t index = 0; index < kStepsPerTrack; ++index) {
+      frame.track_a[index] = true;
+      frame.track_b[index] = blink_on;
+    }
+
+    frame.system[0] = ui.storage_available();
+    frame.system[1] = ui.display_available();
+    frame.system[2] = app.clock_source() == ClockSource::ExternalMidi;
+    frame.system[3] = app.transport_state() == TransportState::Playing;
+    return;
+  }
+
+  if (ui.page() == UiPage::HardwareTest) {
+    const bool track_a_selected = ui.hardware_test_phase() < 2U;
+    const bool phase_high = (ui.hardware_test_phase() % 2U) == 0U;
+    const bool row_on = ui.hardware_test_running() && (phase_high || blink_on);
+
+    for (uint8_t index = 0; index < kStepsPerTrack; ++index) {
+      frame.track_a[index] = track_a_selected && row_on;
+      frame.track_b[index] = !track_a_selected && row_on;
+    }
+
+    frame.system[0] = ui.hardware_test_running();
+    frame.system[1] = hardware_test_uses_midi(ui.hardware_test_mode());
+    frame.system[2] = hardware_test_uses_gate(ui.hardware_test_mode());
+    frame.system[3] = phase_high;
+    return;
+  }
 
   const ProjectState& project = app.project();
   for (uint8_t index = 0; index < kStepsPerTrack; ++index) {
@@ -76,7 +114,7 @@ void PanelLedDriver::render(const App& app, const UiController& ui, bool blink_o
 
 void PanelLedDriver::write(const PanelLedFrame& frame) const {
 #if defined(ARDUINO)
-  uint8_t bytes[kLedShiftRegisterCount]{};
+  uint8_t bytes[hardware::kLedShiftRegisterCount]{};
 
   for (uint8_t index = 0; index < kStepsPerTrack; ++index) {
     set_output_bit(bytes, index, frame.track_a[index]);

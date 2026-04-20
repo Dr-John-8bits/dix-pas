@@ -354,6 +354,20 @@ bool test_boot_screen_renders_branding_and_version(CheckContext& ctx) {
   return true;
 }
 
+bool test_boot_exit_shows_startup_overlay(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+
+  ui.set_startup_message("Loaded P2");
+  ui.enter_boot_page();
+  ui.leave_boot_page();
+
+  CHECK_EQ(ctx, UiPage::Home, ui.page());
+  CHECK_TRUE(ctx, ui.overlay().active);
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "Loaded P2") != nullptr);
+  return true;
+}
+
 bool test_external_midi_clock_advances_transport(CheckContext& ctx) {
   App app;
   app.seed_demo_project();
@@ -417,6 +431,144 @@ bool test_ui_generates_and_mutates_slots_from_global_edit(CheckContext& ctx) {
   return true;
 }
 
+bool test_ui_can_switch_clock_source_from_global_edit(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+
+  CHECK_EQ(ctx, ClockSource::Internal, app.clock_source());
+
+  ui.press_mode_long();
+  cycle_to_global_target(ui, GlobalTarget::ClockSource);
+  CHECK_EQ(ctx, UiPage::GlobalEdit, ui.page());
+  CHECK_EQ(ctx, GlobalTarget::ClockSource, ui.global_target());
+
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, ClockSource::ExternalMidi, app.clock_source());
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "External") != nullptr);
+
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, ClockSource::Internal, app.clock_source());
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "Internal") != nullptr);
+  return true;
+}
+
+bool test_ui_can_switch_machine_mode_from_global_edit(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+
+  CHECK_EQ(ctx, MachineMode::Dual, app.project().machine_mode);
+
+  ui.press_mode_long();
+  cycle_to_global_target(ui, GlobalTarget::MachineMode);
+  CHECK_EQ(ctx, UiPage::GlobalEdit, ui.page());
+  CHECK_EQ(ctx, GlobalTarget::MachineMode, ui.global_target());
+
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, MachineMode::Chain20, app.project().machine_mode);
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "Chain20") != nullptr);
+
+  ui.rotate_encoder(1);
+  CHECK_EQ(ctx, MachineMode::Dual, app.project().machine_mode);
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "Dual") != nullptr);
+  return true;
+}
+
+bool test_shift_reset_toggles_diagnostic_mode(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+  DisplayEngine display;
+  DisplayFrame frame{};
+
+  ui.set_hardware_status(true, false);
+  ui.set_shift_held(true);
+  ui.press_reset();
+  CHECK_EQ(ctx, UiPage::Diagnostic, ui.page());
+
+  ui.press_track_step(TrackId::A, 2U);
+  CHECK_TRUE(ctx, strstr(ui.diagnostic_event(), "A Step 3") != nullptr);
+
+  display.render(app, ui, frame);
+  CHECK_TRUE(ctx, strstr(frame.lines[0], "Diagnostic") != nullptr);
+  CHECK_TRUE(ctx, strstr(frame.lines[1], "FRAM:OK OLED:MISS") != nullptr);
+
+  ui.press_reset();
+  CHECK_EQ(ctx, UiPage::Home, ui.page());
+  return true;
+}
+
+bool test_diagnostic_shows_last_midi_input_event(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+  DisplayEngine display;
+  DisplayFrame frame{};
+
+  app.receive_midi_byte(0xFAU);
+  ui.set_shift_held(true);
+  ui.press_reset();
+
+  display.render(app, ui, frame);
+  CHECK_TRUE(ctx, strstr(frame.lines[3], "In:Start") != nullptr);
+
+  app.receive_midi_byte(0xFCU);
+  display.render(app, ui, frame);
+  CHECK_TRUE(ctx, strstr(frame.lines[3], "In:Stop") != nullptr);
+  return true;
+}
+
+bool test_shift_play_toggles_hardware_test_and_emits_outputs(CheckContext& ctx) {
+  App app;
+  UiController ui(app);
+  DisplayEngine display;
+  DisplayFrame frame{};
+
+  ui.set_shift_held(true);
+  ui.press_play();
+  CHECK_EQ(ctx, UiPage::HardwareTest, ui.page());
+  ui.set_shift_held(false);
+  CHECK_TRUE(ctx, ui.hardware_test_running());
+  CHECK_EQ(ctx, HardwareTestMode::Combined, ui.hardware_test_mode());
+  CHECK_TRUE(ctx, app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::B));
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "A On") != nullptr);
+
+  uint8_t byte = 0U;
+  CHECK_TRUE(ctx, app.pop_midi_byte(byte));
+  CHECK_EQ(ctx, 0x90U, byte);
+  CHECK_TRUE(ctx, app.pop_midi_byte(byte));
+  CHECK_TRUE(ctx, app.pop_midi_byte(byte));
+  CHECK_TRUE(ctx, byte > 0U);
+
+  display.render(app, ui, frame);
+  CHECK_TRUE(ctx, strstr(frame.lines[0], "HW Both Run") != nullptr);
+  CHECK_TRUE(ctx, strstr(frame.lines[2], "GA:Hi GB:Lo") != nullptr);
+
+  ui.update(500U);
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "A Off") != nullptr);
+  CHECK_TRUE(ctx, app.pop_midi_byte(byte));
+  CHECK_EQ(ctx, 0x80U, byte);
+
+  ui.press_mode_short();
+  CHECK_EQ(ctx, HardwareTestMode::MidiOnly, ui.hardware_test_mode());
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::B));
+
+  ui.press_stop();
+  CHECK_TRUE(ctx, !ui.hardware_test_running());
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "Hold Low") != nullptr);
+
+  ui.press_play();
+  CHECK_TRUE(ctx, ui.hardware_test_running());
+  CHECK_TRUE(ctx, strstr(ui.hardware_test_status(), "A On") != nullptr);
+
+  ui.set_shift_held(true);
+  ui.press_play();
+  CHECK_EQ(ctx, UiPage::Home, ui.page());
+  CHECK_TRUE(ctx, ui.overlay().active);
+  CHECK_TRUE(ctx, strstr(ui.overlay().line2, "HW Test Off") != nullptr);
+  return true;
+}
+
 using TestFunction = bool (*)(CheckContext&);
 
 struct TestCase {
@@ -436,9 +588,18 @@ int main() {
       {"oled_display_initializes_and_renders", test_oled_display_initializes_and_renders},
       {"boot_screen_renders_branding_and_version",
        test_boot_screen_renders_branding_and_version},
+      {"boot_exit_shows_startup_overlay", test_boot_exit_shows_startup_overlay},
       {"external_midi_clock_advances_transport", test_external_midi_clock_advances_transport},
       {"ui_generates_and_mutates_slots_from_global_edit",
        test_ui_generates_and_mutates_slots_from_global_edit},
+      {"ui_can_switch_clock_source_from_global_edit",
+       test_ui_can_switch_clock_source_from_global_edit},
+      {"ui_can_switch_machine_mode_from_global_edit",
+       test_ui_can_switch_machine_mode_from_global_edit},
+      {"shift_reset_toggles_diagnostic_mode", test_shift_reset_toggles_diagnostic_mode},
+      {"diagnostic_shows_last_midi_input_event", test_diagnostic_shows_last_midi_input_event},
+      {"shift_play_toggles_hardware_test_and_emits_outputs",
+       test_shift_play_toggles_hardware_test_and_emits_outputs},
   };
 
   uint8_t passed = 0U;

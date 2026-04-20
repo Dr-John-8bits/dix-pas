@@ -5,6 +5,7 @@ Note documentaire :
 - ce document propose un mapping initial de broches pour lancer le dev et le schéma
 - ce mapping est un brouillon de travail
 - en cas de conflit de scope, `docs/product/DIX_PAS_SOURCE_DE_VERITE.md` l'emporte
+- le point de vérité firmware côté brochage est `firmware/include/dixpas/hardware_config.hpp`
 
 ## 1. Objet
 

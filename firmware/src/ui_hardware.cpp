@@ -1,5 +1,7 @@
 #include "dixpas/ui_hardware.hpp"
 
+#include "dixpas/hardware_config.hpp"
+
 #if defined(ARDUINO)
 #include <Arduino.h>
 #endif
@@ -8,17 +10,6 @@ namespace dixpas {
 
 #if defined(ARDUINO)
 namespace {
-
-constexpr uint8_t kEncoderPhaseAPin = 2;
-constexpr uint8_t kEncoderPhaseBPin = 3;
-constexpr uint8_t kEncoderButtonPin = 4;
-constexpr uint8_t kShiftRegisterLoadPin = 9;
-constexpr uint8_t kShiftRegisterDataPin = 12;
-constexpr uint8_t kShiftRegisterClockPin = 13;
-
-constexpr uint8_t kShiftRegisterCount = 5;
-constexpr bool kButtonsAreActiveLow = true;
-constexpr bool kEncoderIsActiveLow = true;
 
 bool decode_active_level(bool raw_state, bool active_low) {
   return active_low ? !raw_state : raw_state;
@@ -31,12 +22,13 @@ bool read_chain_bit(const uint8_t* bytes, uint8_t logical_index) {
 }
 
 void read_shift_register_bytes(uint8_t* bytes) {
-  digitalWrite(kShiftRegisterLoadPin, LOW);
+  digitalWrite(hardware::kInputShiftRegisterLoadPin, LOW);
   delayMicroseconds(5);
-  digitalWrite(kShiftRegisterLoadPin, HIGH);
+  digitalWrite(hardware::kInputShiftRegisterLoadPin, HIGH);
 
-  for (uint8_t index = 0; index < kShiftRegisterCount; ++index) {
-    bytes[index] = shiftIn(kShiftRegisterDataPin, kShiftRegisterClockPin, MSBFIRST);
+  for (uint8_t index = 0; index < hardware::kInputShiftRegisterCount; ++index) {
+    bytes[index] = shiftIn(hardware::kInputShiftRegisterDataPin,
+                           hardware::kSharedShiftRegisterClockPin, MSBFIRST);
   }
 }
 
@@ -45,16 +37,16 @@ void read_shift_register_bytes(uint8_t* bytes) {
 
 void UiHardware::begin() {
 #if defined(ARDUINO)
-  pinMode(kEncoderPhaseAPin, INPUT_PULLUP);
-  pinMode(kEncoderPhaseBPin, INPUT_PULLUP);
-  pinMode(kEncoderButtonPin, INPUT_PULLUP);
+  pinMode(hardware::kEncoderPhaseAPin, INPUT_PULLUP);
+  pinMode(hardware::kEncoderPhaseBPin, INPUT_PULLUP);
+  pinMode(hardware::kEncoderButtonPin, INPUT_PULLUP);
 
-  pinMode(kShiftRegisterLoadPin, OUTPUT);
-  pinMode(kShiftRegisterClockPin, OUTPUT);
-  pinMode(kShiftRegisterDataPin, INPUT);
+  pinMode(hardware::kInputShiftRegisterLoadPin, OUTPUT);
+  pinMode(hardware::kSharedShiftRegisterClockPin, OUTPUT);
+  pinMode(hardware::kInputShiftRegisterDataPin, INPUT);
 
-  digitalWrite(kShiftRegisterLoadPin, HIGH);
-  digitalWrite(kShiftRegisterClockPin, LOW);
+  digitalWrite(hardware::kInputShiftRegisterLoadPin, HIGH);
+  digitalWrite(hardware::kSharedShiftRegisterClockPin, LOW);
 #endif
 }
 
@@ -62,37 +54,40 @@ UiInputSnapshot UiHardware::read_snapshot() const {
   UiInputSnapshot snapshot{};
 
 #if defined(ARDUINO)
-  uint8_t bytes[kShiftRegisterCount]{};
+  uint8_t bytes[hardware::kInputShiftRegisterCount]{};
   read_shift_register_bytes(bytes);
 
   for (uint8_t index = 0; index < kStepsPerTrack; ++index) {
     snapshot.track_a_steps[index] =
-        decode_active_level(read_chain_bit(bytes, index), kButtonsAreActiveLow);
+        decode_active_level(read_chain_bit(bytes, index), hardware::kButtonsAreActiveLow);
     snapshot.track_b_steps[index] =
         decode_active_level(read_chain_bit(bytes, static_cast<uint8_t>(10U + index)),
-                            kButtonsAreActiveLow);
+                            hardware::kButtonsAreActiveLow);
     snapshot.row3_steps[index] =
         decode_active_level(read_chain_bit(bytes, static_cast<uint8_t>(20U + index)),
-                            kButtonsAreActiveLow);
+                            hardware::kButtonsAreActiveLow);
   }
 
   snapshot.play_button =
-      decode_active_level(read_chain_bit(bytes, 30U), kButtonsAreActiveLow);
+      decode_active_level(read_chain_bit(bytes, 30U), hardware::kButtonsAreActiveLow);
   snapshot.stop_button =
-      decode_active_level(read_chain_bit(bytes, 31U), kButtonsAreActiveLow);
+      decode_active_level(read_chain_bit(bytes, 31U), hardware::kButtonsAreActiveLow);
   snapshot.reset_button =
-      decode_active_level(read_chain_bit(bytes, 32U), kButtonsAreActiveLow);
+      decode_active_level(read_chain_bit(bytes, 32U), hardware::kButtonsAreActiveLow);
   snapshot.mode_button =
-      decode_active_level(read_chain_bit(bytes, 33U), kButtonsAreActiveLow);
+      decode_active_level(read_chain_bit(bytes, 33U), hardware::kButtonsAreActiveLow);
   snapshot.shift_button =
-      decode_active_level(read_chain_bit(bytes, 34U), kButtonsAreActiveLow);
+      decode_active_level(read_chain_bit(bytes, 34U), hardware::kButtonsAreActiveLow);
 
   snapshot.encoder_button =
-      decode_active_level(digitalRead(kEncoderButtonPin) != LOW, kEncoderIsActiveLow);
+      decode_active_level(digitalRead(hardware::kEncoderButtonPin) != LOW,
+                          hardware::kEncoderIsActiveLow);
   snapshot.encoder_phase_a =
-      decode_active_level(digitalRead(kEncoderPhaseAPin) != LOW, kEncoderIsActiveLow);
+      decode_active_level(digitalRead(hardware::kEncoderPhaseAPin) != LOW,
+                          hardware::kEncoderIsActiveLow);
   snapshot.encoder_phase_b =
-      decode_active_level(digitalRead(kEncoderPhaseBPin) != LOW, kEncoderIsActiveLow);
+      decode_active_level(digitalRead(hardware::kEncoderPhaseBPin) != LOW,
+                          hardware::kEncoderIsActiveLow);
 #endif
 
   return snapshot;

@@ -38,9 +38,15 @@ class App {
   void reset_playhead();
   void tick_internal();
   void receive_midi_byte(uint8_t byte);
+  void set_manual_gate(TrackId track, bool high);
+  void set_manual_note(TrackId track, uint8_t midi_channel, uint8_t note, uint8_t velocity,
+                       bool high);
+  void clear_manual_test_outputs();
 
   bool pop_midi_byte(uint8_t& byte) { return midi_.pop_byte(byte); }
   bool pop_routed_event(EngineEvent& event) { return monitor_queue_.pop(event); }
+  [[nodiscard]] bool has_last_midi_input_event() const { return has_last_midi_input_event_; }
+  [[nodiscard]] MidiInputEvent last_midi_input_event() const { return last_midi_input_event_; }
   [[nodiscard]] bool gate_state(TrackId track) const { return gates_.gate_state(track); }
   [[nodiscard]] bool has_playhead_step(TrackId track) const {
     return sequencer_.has_playhead_step(track);
@@ -59,6 +65,12 @@ class App {
  private:
   static constexpr size_t kMonitorQueueCapacity = 64;
 
+  struct ManualNoteState {
+    bool active = false;
+    uint8_t midi_channel = 1;
+    uint8_t note = 60;
+  };
+
   ClockEngine clock_{};
   SequencerEngine sequencer_{};
   GenerativeEngine generator_{};
@@ -67,6 +79,9 @@ class App {
   MidiDinInputEngine midi_in_{};
   GateOutputEngine gates_{};
   FixedQueue<EngineEvent, kMonitorQueueCapacity> monitor_queue_{};
+  ManualNoteState manual_notes_[2]{};
+  MidiInputEvent last_midi_input_event_{};
+  bool has_last_midi_input_event_ = false;
 
   static ProjectState build_default_project();
   void seed_demo_generative_bank();

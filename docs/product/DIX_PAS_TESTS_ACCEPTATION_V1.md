@@ -33,6 +33,7 @@ Base de test recommandée :
 Critere :
 
 - la machine demarre sans freeze
+- le splash `DIX PAS / by Dr. John / version` apparait
 - l'écran affiche un état principal cohérent
 
 ### T-002 - Etat initial sain
@@ -49,6 +50,23 @@ Critere :
 - l'encodeur reagit
 - les boutons reagissent
 - aucun comportement erratique immédiat
+
+### T-004 - Mode diagnostic
+
+Critere :
+
+- `SHIFT + RESET` ouvre bien le diagnostic
+- l'état `FRAM / OLED` est visible
+- le dernier événement `MIDI IN` est visible
+
+### T-005 - Mode test MIDI / Gate
+
+Critere :
+
+- `SHIFT + PLAY` ouvre bien le mode test
+- `MODE` fait tourner `Both`, `MIDI`, `Gate`
+- `STOP` force les sorties test à l'état bas
+- `RESET` relance le cycle depuis `A On`
 
 ---
 
@@ -80,6 +98,13 @@ Critere :
 
 - les pas 1 a 20 sont lus dans le bon ordre
 - la transition entre pas 10 et pas 11 est propre
+
+### T-013b - Sélection du mode machine
+
+Critere :
+
+- le mode `Dual / Chain20` est réglable depuis `Global Edit`
+- l'écran reflète correctement le mode actif
 
 ### T-014 - Longueur de piste
 
@@ -195,12 +220,20 @@ Critere :
 - la machine peut jouer sur sa propre clock
 - le tempo est stable
 
+### T-043b - Sélection de source d'horloge
+
+Critere :
+
+- la source `Internal / External` est réglable depuis `Global Edit`
+- l'écran reflète correctement la source active
+
 ### T-044 - Clock externe
 
 Critere :
 
 - la machine suit MIDI Clock externe
 - Start et Stop externes sont bien pris en compte
+- le diagnostic montre bien `In:Clock`, `In:Start`, `In:Stop`
 
 ### T-045 - Arret propre
 

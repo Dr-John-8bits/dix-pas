@@ -32,6 +32,7 @@ Modules actuellement posés :
 - `GenerativeEngine`
 - `DisplayEngine`
 - `OledDisplay`
+- `hardware_config`
 
 Capacités déjà implémentées :
 
@@ -50,6 +51,7 @@ Capacités déjà implémentées :
 - encodage `MIDI DIN` en octets
 - réception `MIDI DIN` temps réel (`Clock`, `Start`, `Continue`, `Stop`)
 - support clock interne et clock externe MIDI
+- bascule utilisateur `Clock Internal / External` via `Global Edit`
 - état runtime des deux `Gate Out`
 - sauvegarde / chargement de presets via slots fixes + `CRC16`
 - backend `FRAM I2C` prêt pour l'Arduino avec probing, adressage 16 bits et transferts découpés
@@ -59,6 +61,7 @@ Capacités déjà implémentées :
 - driver Arduino pour la façade LEDs via chaîne `74HC595`
 - fondation V2 pour `Euclidean`, génération mélodique par gamme et mutation légère
 - exposition UI légère des slots génératifs via `Global Edit`
+- bascule utilisateur `Dual / Chain20` via `Global Edit`
 - chargement d'un preset via `encoder button` sur `Preset`
 - sauvegarde explicite via `SHIFT + encoder button` sur `Preset`
 - application d'un slot génératif via `encoder button` sur `Generative`
@@ -68,6 +71,14 @@ Capacités déjà implémentées :
 - rendu OLED paginé sans framebuffer complet pour économiser la RAM du `Nano Every`
 - splash de boot avec branding et version firmware
 - tentative de chargement automatique du dernier preset connu au démarrage
+- mode diagnostic via `SHIFT + RESET`
+- mode test `MIDI / Gate` via `SHIFT + PLAY`
+- cycle de test `Both -> MIDI -> Gate` via `MODE`
+- `STOP` force toutes les sorties test à l'état bas
+- `RESET` relance le cycle de test depuis la phase `A On`
+- états `FRAM / OLED` et dernier événement visibles dans le diagnostic
+- dernier événement `MIDI IN` visible dans le diagnostic
+- fallback de démarrage si FRAM absente ou preset invalide
 - boot Arduino en état `STOP`, sans auto-play
 
 Fondation générative déjà posée :
@@ -100,9 +111,13 @@ Le runner `native_checks` valide actuellement :
 - roundtrip `FRAM I2C` mocké avec validation du chunking
 - initialisation et rendu `OLED` mockés
 - écran de boot et version firmware
+- sortie de boot avec overlay de statut de démarrage
 - `UiScanner` pour `MODE short` / `MODE long`
 - clock MIDI externe
 - application / mutation des slots génératifs depuis l'UI
+- bascule `SHIFT + RESET` vers le diagnostic
+- bascule `SHIFT + PLAY` vers le mode test `MIDI / Gate`
+- affichage du dernier `MIDI IN` dans le diagnostic
 
 Commandes utiles :
 
@@ -121,3 +136,4 @@ Note :
 
 - `PLATFORMIO_CORE_DIR` pointe PlatformIO vers un dossier local au projet
 - cela évite de dépendre de `~/.platformio` pour ce repo
+- le mapping hardware figé côté firmware est centralisé dans `include/dixpas/hardware_config.hpp`

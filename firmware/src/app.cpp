@@ -97,6 +97,8 @@ void App::start() {
   midi_in_.reset();
   gates_.reset();
   monitor_queue_.clear();
+  manual_notes_[0] = {};
+  manual_notes_[1] = {};
   clock_.start();
   if (clock_.clock_source() == ClockSource::Internal) {
     midi_.send_start();
@@ -125,6 +127,52 @@ void App::stop() {
 void App::reset_playhead() {
   sequencer_.reset_playhead();
   process_pending_engine_events();
+}
+
+void App::set_manual_gate(TrackId track, bool high) {
+  gates_.set_gate(track, high);
+}
+
+void App::set_manual_note(TrackId track, uint8_t midi_channel, uint8_t note, uint8_t velocity,
+                          bool high) {
+  ManualNoteState& state = manual_notes_[track == TrackId::A ? 0U : 1U];
+  const uint8_t channel = clamp_midi_channel(midi_channel);
+  const uint8_t clipped_note = static_cast<uint8_t>(note & 0x7FU);
+
+  if (high) {
+    if (state.active && (state.midi_channel != channel || state.note != clipped_note)) {
+      midi_.send_note_off(state.midi_channel, state.note);
+      state.active = false;
+    }
+
+    if (!state.active) {
+      midi_.send_note_on(channel, clipped_note, velocity);
+    }
+
+    state.active = true;
+    state.midi_channel = channel;
+    state.note = clipped_note;
+    return;
+  }
+
+  if (!state.active) {
+    return;
+  }
+
+  midi_.send_note_off(state.midi_channel, state.note);
+  state.active = false;
+}
+
+void App::clear_manual_test_outputs() {
+  for (uint8_t index = 0; index < 2U; ++index) {
+    ManualNoteState& state = manual_notes_[index];
+    if (state.active) {
+      midi_.send_note_off(state.midi_channel, state.note);
+      state.active = false;
+    }
+  }
+
+  gates_.reset();
 }
 
 void App::tick_internal() {
@@ -249,6 +297,9 @@ void App::receive_midi_byte(uint8_t byte) {
 void App::process_pending_midi_input_events() {
   MidiInputEvent event;
   while (midi_in_.pop_event(event)) {
+    last_midi_input_event_ = event;
+    has_last_midi_input_event_ = true;
+
     switch (event.type) {
       case MidiInputEventType::Clock:
         if (clock_.clock_source() == ClockSource::ExternalMidi &&

@@ -37,6 +37,7 @@ Principes retenus :
 Variables minimales a maintenir :
 
 - `machine_mode` : `DUAL` ou `CHAIN20`
+- `clock_source` : `INTERNAL` ou `EXTERNAL_MIDI`
 - `transport_state` : `STOPPED` ou `PLAYING`
 - `track_focus` : `A` ou `B`
 - `selected_step_a` : `0..9`
@@ -44,8 +45,8 @@ Variables minimales a maintenir :
 - `row3_base_mode` : `PROB` ou `ONOFF`
 - `shift_held` : `true / false`
 - `encoder_target` : `NOTE`, `GATE`, `VELOCITY`
-- `global_target` : `TEMPO`, `ROOT`, `SCALE`, `PLAYMODE`, `TRACK_LENGTH`, `MIDI_CHANNEL`, `PRESET_SLOT`
-- `ui_page` : `HOME`, `STEP_EDIT`, `GLOBAL_EDIT`
+- `global_target` : `TEMPO`, `CLOCK_SOURCE`, `MACHINE_MODE`, `ROOT`, `SCALE`, `PLAYMODE`, `TRACK_LENGTH`, `MIDI_CHANNEL`, `PRESET_SLOT`, `GENERATIVE_SLOT`
+- `ui_page` : `BOOT`, `HOME`, `STEP_EDIT`, `GLOBAL_EDIT`, `DIAGNOSTIC`, `HARDWARE_TEST`
 - `overlay_active` : `true / false`
 
 ---
@@ -121,12 +122,15 @@ Description :
 Contenu cible :
 
 - tempo
+- source d'horloge
+- mode machine
 - root
 - scale
 - play mode
 - longueur de piste
 - canal MIDI
 - preset slot
+- generative slot
 
 Affichage :
 
@@ -135,6 +139,48 @@ Affichage :
 Sortie :
 
 - retour vers `HOME` par action utilisateur ou timeout selon le parametre
+
+### 4.5 DIAGNOSTIC
+
+Description :
+
+- page de validation hardware
+- n'édite pas la séquence
+
+Accès :
+
+- `SHIFT + RESET`
+
+Affichage :
+
+- état `FRAM / OLED`
+- dernier événement de façade
+- dernier événement `MIDI IN`
+- état transport / clock
+
+### 4.6 HARDWARE_TEST
+
+Description :
+
+- page de test dédiée au bring-up réel
+- force des sorties connues sans dépendre du séquenceur normal
+
+Accès :
+
+- `SHIFT + PLAY`
+
+Modes :
+
+- `Both`
+- `MIDI`
+- `Gate`
+
+Contrôles :
+
+- `MODE` : change le sous-mode de test
+- `STOP` : force toutes les sorties test à l'état bas
+- `RESET` : relance le cycle depuis `A On`
+- `SHIFT + PLAY` : quitte le mode test
 
 ---
 
@@ -217,7 +263,9 @@ Cycle recommandé :
 
 Appui court :
 
-- alterne `row3_base_mode`
+- en `HOME` ou `STEP_EDIT`, alterne `row3_base_mode`
+- en `GLOBAL_EDIT`, avance `global_target`
+- en `HARDWARE_TEST`, fait tourner `Both -> MIDI -> Gate`
 
 Cycle recommandé :
 
@@ -236,12 +284,15 @@ Rôle :
 Effets :
 
 - si maintenu, la rangée 3 passe temporairement en `RATCHET`
+- combiné a `RESET`, ouvre ou ferme `DIAGNOSTIC`
+- combiné a `PLAY`, ouvre ou ferme `HARDWARE_TEST`
 
 ## 5.8 Bouton PLAY
 
 Effet :
 
 - passe `transport_state` a `PLAYING`
+- si `SHIFT` est maintenu, ouvre ou ferme `HARDWARE_TEST`
 
 ## 5.9 Bouton STOP
 
@@ -250,6 +301,7 @@ Effet :
 - passe `transport_state` a `STOPPED`
 - force `Note Off`
 - force `Gate Out A / B` a l'état bas
+- en `HARDWARE_TEST`, force les sorties test a l'état bas sans quitter la page
 
 ## 5.10 Bouton RESET
 
@@ -257,6 +309,8 @@ Effet :
 
 - remet la position de lecture au debut
 - force les Gates a l'état bas
+- si `SHIFT` est maintenu, ouvre ou ferme `DIAGNOSTIC`
+- en `HARDWARE_TEST`, relance le cycle de test depuis `A On`
 
 ---
 
@@ -275,12 +329,15 @@ Condition :
 Ordre recommandé de cycle :
 
 1. `TEMPO`
-2. `ROOT`
-3. `SCALE`
-4. `PLAYMODE`
-5. `TRACK_LENGTH`
-6. `MIDI_CHANNEL`
-7. `PRESET_SLOT`
+2. `CLOCK_SOURCE`
+3. `MACHINE_MODE`
+4. `ROOT`
+5. `SCALE`
+6. `PLAYMODE`
+7. `TRACK_LENGTH`
+8. `MIDI_CHANNEL`
+9. `PRESET_SLOT`
+10. `GENERATIVE_SLOT`
 
 ## 6.3 Navigation
 
@@ -349,6 +406,18 @@ HOME -> GLOBAL_EDIT
 
 GLOBAL_EDIT -> HOME
   MODE long
+
+HOME -> DIAGNOSTIC
+  SHIFT + RESET
+
+DIAGNOSTIC -> HOME
+  SHIFT + RESET
+
+HOME -> HARDWARE_TEST
+  SHIFT + PLAY
+
+HARDWARE_TEST -> HOME
+  SHIFT + PLAY
 ```
 
 ---

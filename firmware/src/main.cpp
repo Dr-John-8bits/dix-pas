@@ -2,6 +2,7 @@
 #include "dixpas/display_engine.hpp"
 #include "dixpas/fram_i2c_backend.hpp"
 #include "dixpas/generative_engine.hpp"
+#include "dixpas/hardware_config.hpp"
 #include "dixpas/music_scales.hpp"
 #include "dixpas/oled_display.hpp"
 #include "dixpas/panel_led_driver.hpp"
@@ -19,19 +20,17 @@
 namespace {
 
 #if defined(ARDUINO)
-constexpr uint8_t kGateOutAPin = 5;
-constexpr uint8_t kGateOutBPin = 6;
-constexpr uint16_t kBootSplashDurationMs = 1500U;
-
 dixpas::App g_app;
-dixpas::WireFramI2cPort g_fram_port;
-dixpas::FramI2cBackend g_fram_backend(g_fram_port);
+dixpas::WireFramI2cPort g_fram_port(dixpas::hardware::kI2cClockHz);
+dixpas::FramI2cBackend g_fram_backend(g_fram_port, dixpas::hardware::kFramI2cAddress,
+                                      dixpas::hardware::kFramTransferSize);
 dixpas::StorageEngine g_storage(g_fram_backend);
 dixpas::UiController g_ui(g_app);
 dixpas::UiScanner g_ui_scanner;
 dixpas::UiHardware g_ui_hardware;
-dixpas::WireOledI2cPort g_oled_port;
-dixpas::OledDisplay g_oled_display(g_oled_port);
+dixpas::WireOledI2cPort g_oled_port(dixpas::hardware::kI2cClockHz);
+dixpas::OledDisplay g_oled_display(g_oled_port, dixpas::hardware::kOledI2cAddress,
+                                   dixpas::hardware::kOledTransferSize);
 dixpas::DisplayEngine g_display_engine;
 dixpas::DisplayFrame g_display_frame{};
 dixpas::DisplayFrame g_previous_display_frame{};
@@ -50,8 +49,10 @@ void flush_midi_bytes() {
 }
 
 void sync_gate_outputs() {
-  digitalWrite(kGateOutAPin, g_app.gate_state(dixpas::TrackId::A) ? HIGH : LOW);
-  digitalWrite(kGateOutBPin, g_app.gate_state(dixpas::TrackId::B) ? HIGH : LOW);
+  digitalWrite(dixpas::hardware::kGateOutAPin,
+               g_app.gate_state(dixpas::TrackId::A) ? HIGH : LOW);
+  digitalWrite(dixpas::hardware::kGateOutBPin,
+               g_app.gate_state(dixpas::TrackId::B) ? HIGH : LOW);
 }
 
 void sync_panel_leds() {
@@ -92,7 +93,12 @@ void process_ui_inputs() {
 }
 
 void initialize_storage_and_startup_project() {
-  if (!g_fram_backend.begin()) {
+  const bool storage_ready = g_fram_backend.begin();
+  const bool display_ready = g_oled_display.is_ready();
+  g_ui.set_hardware_status(storage_ready, display_ready);
+
+  if (!storage_ready) {
+    g_ui.set_startup_message(display_ready ? "No FRAM" : "No FRAM/OLED");
     return;
   }
 
@@ -102,6 +108,7 @@ void initialize_storage_and_startup_project() {
     g_storage.save_metadata(metadata);
   }
 
+  bool loaded_preset = false;
   uint8_t startup_slot = 0U;
   if (dixpas::StorageEngine::preferred_startup_slot(metadata, startup_slot)) {
     dixpas::ProjectState startup_project{};
@@ -109,10 +116,19 @@ void initialize_storage_and_startup_project() {
       g_app.load_project(startup_project);
       metadata.last_loaded_slot = startup_slot;
       g_storage.save_metadata(metadata);
+      char value[32];
+      snprintf(value, sizeof(value), "Loaded P%u", static_cast<unsigned>(startup_slot + 1U));
+      g_ui.set_startup_message(value);
+      loaded_preset = true;
+    } else {
+      g_ui.set_startup_message("Preset Error");
     }
   }
 
   g_ui.attach_storage(g_storage);
+  if (!loaded_preset && !dixpas::StorageEngine::preferred_startup_slot(metadata, startup_slot)) {
+    g_ui.set_startup_message("Default Project");
+  }
 }
 #endif
 
@@ -121,16 +137,17 @@ void initialize_storage_and_startup_project() {
 #if defined(ARDUINO)
 
 void setup() {
-  pinMode(kGateOutAPin, OUTPUT);
-  pinMode(kGateOutBPin, OUTPUT);
-  digitalWrite(kGateOutAPin, LOW);
-  digitalWrite(kGateOutBPin, LOW);
+  pinMode(dixpas::hardware::kGateOutAPin, OUTPUT);
+  pinMode(dixpas::hardware::kGateOutBPin, OUTPUT);
+  digitalWrite(dixpas::hardware::kGateOutAPin, LOW);
+  digitalWrite(dixpas::hardware::kGateOutBPin, LOW);
 
   g_app.seed_demo_project();
   Serial1.begin(31250);
-  g_oled_display.begin();
+  const bool oled_ready = g_oled_display.begin();
   g_ui_hardware.begin();
   g_panel_led_driver.begin();
+  g_ui.set_hardware_status(false, oled_ready);
   g_ui.reset();
   initialize_storage_and_startup_project();
   g_ui.reset();
@@ -138,7 +155,8 @@ void setup() {
   g_ui_scanner.reset();
   g_last_tick_micros = micros();
   g_last_ui_update_millis = millis();
-  g_boot_deadline_millis = g_last_ui_update_millis + kBootSplashDurationMs;
+  g_boot_deadline_millis =
+      g_last_ui_update_millis + dixpas::hardware::kBootSplashDurationMs;
   g_boot_active = true;
   sync_gate_outputs();
   sync_display();

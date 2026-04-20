@@ -280,6 +280,11 @@ Au boot, l'écran affiche :
 - `by Dr. John`
 - la version firmware au format `aa.mm.jj.itération`
 
+Après le splash :
+
+- affichage d'un statut court de démarrage
+- par exemple preset rechargé, projet par défaut ou erreur preset
+
 ---
 
 ## 7. Stratégie d'extension des E/S
@@ -309,6 +314,17 @@ Avantages :
 - firmware simple
 - pas de matrice complexe
 - pas de ghosting
+
+Usage de bring-up retenu :
+
+- `SHIFT + RESET` active un mode diagnostic
+- ce mode affiche l'état `FRAM / OLED`
+- il confirme les événements d'entrée détectés
+- il affiche aussi le dernier événement `MIDI IN`
+- `SHIFT + PLAY` active un mode test `MIDI / Gate`
+- `MODE` y fait tourner `Both`, `MIDI`, `Gate`
+- `STOP` y force toutes les sorties test à l'état bas
+- `RESET` y relance le cycle depuis `A On`
 
 ### 7.3 Bus
 
@@ -431,6 +447,7 @@ Responsabilites :
 - synchronisation externe MIDI Clock
 - conversion entre 24 PPQN MIDI et resolution interne
 - transport global
+- prise en charge d'une source d'horloge sélectionnable côté UI
 
 ### 11.2 Resolution temporelle
 

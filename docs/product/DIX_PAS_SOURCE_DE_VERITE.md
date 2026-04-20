@@ -62,6 +62,7 @@ La V1 du projet comprend :
 - **3 rangées de 10 boutons**
 - **presets**
 - **clock interne et externe**
+- **source d'horloge réglable par l'utilisateur**
 
 La V1 doit être réalisable rapidement et proprement, idéalement dans un premier sprint très court.
 
@@ -116,6 +117,23 @@ La priorité d'usage de la machine est :
 2. on / off
 3. ratchet
 4. le reste à l'encodeur
+
+Mode diagnostic retenu :
+
+- accès via `SHIFT + RESET`
+- destiné au bring-up hardware
+- n'édite pas la séquence pendant le diagnostic
+- affiche l'état `FRAM / OLED`
+- affiche le dernier événement `MIDI IN`
+
+Mode test `MIDI / Gate` retenu :
+
+- accès via `SHIFT + PLAY`
+- destiné à valider rapidement `MIDI OUT` et `Gate Out A/B`
+- `MODE` fait tourner les cibles `Both`, `MIDI`, `Gate`
+- `STOP` force les sorties test à l'état bas
+- `RESET` relance le cycle de test depuis `A On`
+- `SHIFT + PLAY` quitte le mode test
 
 ### 4.4 Ratchet
 
@@ -281,6 +299,7 @@ Comportement au démarrage :
 - priorité au dernier preset chargé
 - sinon dernier preset sauvegardé
 - sinon projet par défaut de secours
+- si un preset est invalide, la machine démarre quand même sur le projet de secours
 
 ---
 

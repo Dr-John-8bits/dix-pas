@@ -43,6 +43,10 @@ const char* global_target_label(GlobalTarget target) {
   switch (target) {
     case GlobalTarget::Root:
       return "Root";
+    case GlobalTarget::ClockSource:
+      return "Clock";
+    case GlobalTarget::MachineMode:
+      return "Mode";
     case GlobalTarget::Scale:
       return "Scale";
     case GlobalTarget::PlayMode:
@@ -59,6 +63,37 @@ const char* global_target_label(GlobalTarget target) {
     default:
       return "Tempo";
   }
+}
+
+const char* hardware_test_mode_label(HardwareTestMode mode) {
+  switch (mode) {
+    case HardwareTestMode::MidiOnly:
+      return "MIDI";
+    case HardwareTestMode::GateOnly:
+      return "Gate";
+    case HardwareTestMode::Combined:
+    default:
+      return "Both";
+  }
+}
+
+const char* midi_input_label(const App& app) {
+  if (!app.has_last_midi_input_event()) {
+    return "None";
+  }
+
+  switch (app.last_midi_input_event().type) {
+    case MidiInputEventType::Clock:
+      return "Clock";
+    case MidiInputEventType::Start:
+      return "Start";
+    case MidiInputEventType::Continue:
+      return "Continue";
+    case MidiInputEventType::Stop:
+      return "Stop";
+  }
+
+  return "None";
 }
 
 const char* play_mode_label(PlayMode mode) {
@@ -182,6 +217,14 @@ void render_global_value_line(const App& app, const UiController& ui, char* dst)
                   static_cast<unsigned>(project.tempo_bpm_x10 / 10U),
                   static_cast<unsigned>(project.tempo_bpm_x10 % 10U));
       break;
+    case GlobalTarget::ClockSource:
+      format_line(dst, "Clock %s",
+                  app.clock_source() == ClockSource::ExternalMidi ? "External" : "Internal");
+      break;
+    case GlobalTarget::MachineMode:
+      format_line(dst, "Mode %s",
+                  project.machine_mode == MachineMode::Chain20 ? "Chain20" : "Dual");
+      break;
     case GlobalTarget::Root:
       format_line(dst, "Root %s", note_name(project.root_note));
       break;
@@ -218,6 +261,27 @@ void DisplayEngine::render(const App& app, const UiController& ui, DisplayFrame&
     center_line(frame.lines[1], "DIX PAS");
     center_line(frame.lines[2], "by Dr. John");
     center_line(frame.lines[3], kFirmwareVersion);
+    return;
+  }
+
+  if (ui.page() == UiPage::Diagnostic) {
+    copy_line(frame.lines[0], "Diagnostic");
+    format_line(frame.lines[1], "FRAM:%s OLED:%s", ui.storage_available() ? "OK" : "MISS",
+                ui.display_available() ? "OK" : "MISS");
+    copy_line(frame.lines[2], ui.diagnostic_event());
+    format_line(frame.lines[3], "In:%s %s %s", midi_input_label(app),
+                transport_label(app.transport_state()),
+                app.clock_source() == ClockSource::ExternalMidi ? "Ext" : "Int");
+    return;
+  }
+
+  if (ui.page() == UiPage::HardwareTest) {
+    format_line(frame.lines[0], "HW %s %s", hardware_test_mode_label(ui.hardware_test_mode()),
+                ui.hardware_test_running() ? "Run" : "Hold");
+    copy_line(frame.lines[1], ui.hardware_test_status());
+    format_line(frame.lines[2], "GA:%s GB:%s", app.gate_state(TrackId::A) ? "Hi" : "Lo",
+                app.gate_state(TrackId::B) ? "Hi" : "Lo");
+    copy_line(frame.lines[3], "Stop Low Rst Sh+Play");
     return;
   }
 

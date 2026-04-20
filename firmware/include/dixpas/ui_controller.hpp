@@ -21,13 +21,21 @@ enum class EncoderTarget : uint8_t {
 
 enum class GlobalTarget : uint8_t {
   Tempo = 0,
-  Root = 1,
-  Scale = 2,
-  PlayMode = 3,
-  TrackLength = 4,
-  MidiChannel = 5,
-  PresetSlot = 6,
-  GenerativeSlot = 7,
+  ClockSource = 1,
+  MachineMode = 2,
+  Root = 3,
+  Scale = 4,
+  PlayMode = 5,
+  TrackLength = 6,
+  MidiChannel = 7,
+  PresetSlot = 8,
+  GenerativeSlot = 9,
+};
+
+enum class HardwareTestMode : uint8_t {
+  Combined = 0,
+  MidiOnly = 1,
+  GateOnly = 2,
 };
 
 enum class UiPage : uint8_t {
@@ -35,6 +43,8 @@ enum class UiPage : uint8_t {
   Home = 1,
   StepEdit = 2,
   GlobalEdit = 3,
+  Diagnostic = 4,
+  HardwareTest = 5,
 };
 
 struct UiOverlay {
@@ -52,6 +62,9 @@ class UiController {
   void leave_boot_page();
   void update(uint16_t elapsed_ms);
   void attach_storage(StorageEngine& storage);
+  void set_hardware_status(bool storage_available, bool display_available);
+  void set_startup_message(const char* message);
+  void show_system_message(const char* title, const char* value);
 
   void press_track_step(TrackId track, uint8_t index);
   void press_row3(uint8_t index);
@@ -74,9 +87,17 @@ class UiController {
   [[nodiscard]] uint8_t preset_slot() const { return preset_slot_; }
   [[nodiscard]] uint8_t generative_slot() const { return generative_slot_; }
   [[nodiscard]] const UiOverlay& overlay() const { return overlay_; }
+  [[nodiscard]] bool storage_available() const { return storage_available_; }
+  [[nodiscard]] bool display_available() const { return display_available_; }
+  [[nodiscard]] const char* diagnostic_event() const { return diagnostic_event_; }
+  [[nodiscard]] HardwareTestMode hardware_test_mode() const { return hardware_test_mode_; }
+  [[nodiscard]] bool hardware_test_running() const { return hardware_test_running_; }
+  [[nodiscard]] uint8_t hardware_test_phase() const { return hardware_test_phase_; }
+  [[nodiscard]] const char* hardware_test_status() const { return hardware_test_status_; }
 
  private:
   static constexpr uint16_t kOverlayTimeoutMs = 1500;
+  static constexpr uint16_t kHardwareTestPhaseDurationMs = 500;
 
   App& app_;
   ProjectState project_{};
@@ -93,6 +114,16 @@ class UiController {
   UiOverlay overlay_{};
   uint16_t overlay_timeout_ms_ = 0;
   StorageEngine* storage_ = nullptr;
+  bool storage_available_ = false;
+  bool display_available_ = false;
+  bool startup_message_pending_ = false;
+  char startup_message_[32]{};
+  char diagnostic_event_[32]{};
+  HardwareTestMode hardware_test_mode_ = HardwareTestMode::Combined;
+  bool hardware_test_running_ = false;
+  uint8_t hardware_test_phase_ = 0;
+  uint16_t hardware_test_phase_elapsed_ms_ = 0;
+  char hardware_test_status_[32]{};
 
   void commit_project(bool reset_playhead);
   void show_step_overlay(TrackId track, uint8_t step_index, const char* parameter,
@@ -106,6 +137,14 @@ class UiController {
   void update_storage_metadata(bool saved);
   void show_storage_overlay(const char* action, StorageStatus status);
   void restore_preset_slot_from_metadata();
+  void set_diagnostic_event(const char* value);
+  void toggle_diagnostic_page();
+  void toggle_hardware_test_page();
+  void start_hardware_test();
+  void stop_hardware_test();
+  void restart_hardware_test();
+  void advance_hardware_test_phase();
+  void apply_hardware_test_phase();
 
   Track& focused_track();
   const Track& focused_track() const;

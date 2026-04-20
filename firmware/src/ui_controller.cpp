@@ -13,6 +13,9 @@ constexpr uint8_t kProbabilityCycle[] = {0U, 25U, 50U, 75U, 100U};
 constexpr uint8_t kMaxDegreeValue = 63U;
 constexpr uint8_t kVelocityStep = 4U;
 constexpr uint8_t kGateStep = 5U;
+constexpr uint8_t kHardwareTestNoteA = 48U;
+constexpr uint8_t kHardwareTestNoteB = 60U;
+constexpr uint8_t kHardwareTestVelocity = 100U;
 
 const char* track_name(TrackId track) {
   return track == TrackId::A ? "Track A" : "Track B";
@@ -50,6 +53,10 @@ const char* global_target_name(GlobalTarget target) {
   switch (target) {
     case GlobalTarget::Tempo:
       return "Tempo";
+    case GlobalTarget::ClockSource:
+      return "Clock";
+    case GlobalTarget::MachineMode:
+      return "Mode";
     case GlobalTarget::Root:
       return "Root";
     case GlobalTarget::Scale:
@@ -71,6 +78,18 @@ const char* global_target_name(GlobalTarget target) {
 
 uint8_t wrap_increment(uint8_t value, uint8_t limit) {
   return static_cast<uint8_t>((value + 1U) % limit);
+}
+
+TrackId hardware_test_track(uint8_t phase) {
+  return phase < 2U ? TrackId::A : TrackId::B;
+}
+
+bool hardware_test_phase_high(uint8_t phase) {
+  return (phase % 2U) == 0U;
+}
+
+uint8_t hardware_test_note(TrackId track) {
+  return track == TrackId::A ? kHardwareTestNoteA : kHardwareTestNoteB;
 }
 
 void format_step_note_value(const ProjectState& project, const Track& track, const Step& step,
@@ -103,6 +122,12 @@ void UiController::reset() {
   generative_slot_ = 0U;
   overlay_ = {};
   overlay_timeout_ms_ = 0U;
+  snprintf(diagnostic_event_, sizeof(diagnostic_event_), "Ready");
+  hardware_test_mode_ = HardwareTestMode::Combined;
+  hardware_test_running_ = false;
+  hardware_test_phase_ = 0U;
+  hardware_test_phase_elapsed_ms_ = 0U;
+  snprintf(hardware_test_status_, sizeof(hardware_test_status_), "Idle");
   restore_preset_slot_from_metadata();
 }
 
@@ -115,10 +140,46 @@ void UiController::enter_boot_page() {
 void UiController::leave_boot_page() {
   if (page_ == UiPage::Boot) {
     page_ = UiPage::Home;
+    if (startup_message_pending_) {
+      show_global_overlay("Startup", startup_message_);
+      startup_message_pending_ = false;
+    }
   }
 }
 
+void UiController::set_hardware_status(bool storage_available, bool display_available) {
+  storage_available_ = storage_available;
+  display_available_ = display_available;
+}
+
+void UiController::set_startup_message(const char* message) {
+  startup_message_pending_ = true;
+  snprintf(startup_message_, sizeof(startup_message_), "%s", message == nullptr ? "" : message);
+}
+
+void UiController::show_system_message(const char* title, const char* value) {
+  show_global_overlay(title, value);
+}
+
 void UiController::update(uint16_t elapsed_ms) {
+  if (page_ == UiPage::HardwareTest && hardware_test_running_) {
+    uint32_t remaining = elapsed_ms;
+    while (remaining > 0U) {
+      const uint16_t budget =
+          static_cast<uint16_t>(kHardwareTestPhaseDurationMs - hardware_test_phase_elapsed_ms_);
+      if (remaining < budget) {
+        hardware_test_phase_elapsed_ms_ =
+            static_cast<uint16_t>(hardware_test_phase_elapsed_ms_ + remaining);
+        remaining = 0U;
+        break;
+      }
+
+      remaining -= budget;
+      hardware_test_phase_elapsed_ms_ = 0U;
+      advance_hardware_test_phase();
+    }
+  }
+
   if (!overlay_.active) {
     return;
   }
@@ -145,6 +206,18 @@ void UiController::press_track_step(TrackId track, uint8_t index) {
     return;
   }
 
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    char value[32];
+    snprintf(value, sizeof(value), "%c Step %u", track == TrackId::A ? 'A' : 'B',
+             static_cast<unsigned>(index + 1U));
+    set_diagnostic_event(value);
+    return;
+  }
+
   track_focus_ = track;
   if (track == TrackId::A) {
     selected_step_a_ = index;
@@ -163,6 +236,17 @@ void UiController::press_track_step(TrackId track, uint8_t index) {
 
 void UiController::press_row3(uint8_t index) {
   if (index >= kStepsPerTrack) {
+    return;
+  }
+
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    char value[32];
+    snprintf(value, sizeof(value), "R3 Step %u", static_cast<unsigned>(index + 1U));
+    set_diagnostic_event(value);
     return;
   }
 
@@ -201,6 +285,18 @@ void UiController::rotate_encoder(int8_t delta) {
     return;
   }
 
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    char value[32];
+    snprintf(value, sizeof(value), "Encoder %s%d", delta > 0 ? "+" : "",
+             static_cast<int>(delta));
+    set_diagnostic_event(value);
+    return;
+  }
+
   if (page_ == UiPage::GlobalEdit) {
     edit_global_value(delta);
     return;
@@ -211,6 +307,15 @@ void UiController::rotate_encoder(int8_t delta) {
 }
 
 void UiController::press_encoder_button() {
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Encoder Button");
+    return;
+  }
+
   if (page_ == UiPage::GlobalEdit) {
     if (global_target_ == GlobalTarget::PresetSlot) {
       if (shift_held_) {
@@ -229,7 +334,8 @@ void UiController::press_encoder_button() {
       return;
     }
 
-    global_target_ = static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 8U));
+    global_target_ =
+        static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 10U));
     show_global_overlay(global_target_name(global_target_), "Selected");
     return;
   }
@@ -241,9 +347,21 @@ void UiController::press_encoder_button() {
 }
 
 void UiController::press_mode_short() {
+  if (page_ == UiPage::HardwareTest) {
+    hardware_test_mode_ =
+        static_cast<HardwareTestMode>(wrap_increment(static_cast<uint8_t>(hardware_test_mode_), 3U));
+    restart_hardware_test();
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Mode Short");
+    return;
+  }
+
   if (page_ == UiPage::GlobalEdit) {
     global_target_ =
-        static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 8U));
+        static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 10U));
     show_global_overlay(global_target_name(global_target_), "Selected");
     return;
   }
@@ -255,6 +373,15 @@ void UiController::press_mode_short() {
 }
 
 void UiController::press_mode_long() {
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Mode Long");
+    return;
+  }
+
   if (page_ == UiPage::GlobalEdit) {
     page_ = UiPage::Home;
     overlay_.active = false;
@@ -268,6 +395,15 @@ void UiController::press_mode_long() {
 
 void UiController::set_shift_held(bool held) {
   shift_held_ = held;
+  if (page_ == UiPage::HardwareTest) {
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event(held ? "Shift On" : "Shift Off");
+    return;
+  }
+
   if (held) {
     if (page_ == UiPage::GlobalEdit && global_target_ == GlobalTarget::PresetSlot) {
       show_global_overlay("Shift", "Save");
@@ -280,16 +416,59 @@ void UiController::set_shift_held(bool held) {
 }
 
 void UiController::press_play() {
+  if (shift_held_) {
+    toggle_hardware_test_page();
+    return;
+  }
+
+  if (page_ == UiPage::HardwareTest) {
+    start_hardware_test();
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Play Button");
+    return;
+  }
+
   app_.start();
   show_transport_overlay("Play");
 }
 
 void UiController::press_stop() {
+  if (page_ == UiPage::HardwareTest) {
+    stop_hardware_test();
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Stop Button");
+    return;
+  }
+
   app_.stop();
   show_transport_overlay("Stop");
 }
 
 void UiController::press_reset() {
+  if (shift_held_) {
+    if (page_ == UiPage::HardwareTest) {
+      stop_hardware_test();
+    }
+    toggle_diagnostic_page();
+    return;
+  }
+
+  if (page_ == UiPage::HardwareTest) {
+    restart_hardware_test();
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    set_diagnostic_event("Reset Button");
+    return;
+  }
+
   app_.reset_playhead();
   show_transport_overlay("Reset");
 }
@@ -462,6 +641,110 @@ void UiController::restore_preset_slot_from_metadata() {
   }
 }
 
+void UiController::set_diagnostic_event(const char* value) {
+  snprintf(diagnostic_event_, sizeof(diagnostic_event_), "%s", value == nullptr ? "" : value);
+}
+
+void UiController::toggle_diagnostic_page() {
+  overlay_.active = false;
+  overlay_timeout_ms_ = 0U;
+  if (page_ == UiPage::Diagnostic) {
+    page_ = UiPage::Home;
+    set_diagnostic_event("Diag Exit");
+    return;
+  }
+
+  page_ = UiPage::Diagnostic;
+  set_diagnostic_event("Diag Enter");
+}
+
+void UiController::toggle_hardware_test_page() {
+  overlay_.active = false;
+  overlay_timeout_ms_ = 0U;
+
+  if (page_ == UiPage::HardwareTest) {
+    stop_hardware_test();
+    page_ = UiPage::Home;
+    show_transport_overlay("HW Test Off");
+    return;
+  }
+
+  if (page_ == UiPage::Diagnostic) {
+    page_ = UiPage::Home;
+  }
+
+  if (app_.transport_state() == TransportState::Playing) {
+    app_.stop();
+  }
+  app_.clear_manual_test_outputs();
+  page_ = UiPage::HardwareTest;
+  hardware_test_mode_ = HardwareTestMode::Combined;
+  start_hardware_test();
+}
+
+void UiController::start_hardware_test() {
+  if (page_ != UiPage::HardwareTest) {
+    page_ = UiPage::HardwareTest;
+  }
+
+  overlay_.active = false;
+  overlay_timeout_ms_ = 0U;
+  hardware_test_running_ = true;
+  hardware_test_phase_ = 0U;
+  hardware_test_phase_elapsed_ms_ = 0U;
+  apply_hardware_test_phase();
+}
+
+void UiController::stop_hardware_test() {
+  hardware_test_running_ = false;
+  hardware_test_phase_elapsed_ms_ = 0U;
+  app_.clear_manual_test_outputs();
+  snprintf(hardware_test_status_, sizeof(hardware_test_status_), "Hold Low");
+}
+
+void UiController::restart_hardware_test() {
+  if (page_ != UiPage::HardwareTest) {
+    return;
+  }
+
+  start_hardware_test();
+}
+
+void UiController::advance_hardware_test_phase() {
+  hardware_test_phase_ = static_cast<uint8_t>((hardware_test_phase_ + 1U) % 4U);
+  apply_hardware_test_phase();
+}
+
+void UiController::apply_hardware_test_phase() {
+  const TrackId track = hardware_test_track(hardware_test_phase_);
+  const bool high = hardware_test_phase_high(hardware_test_phase_);
+  const uint8_t midi_channel =
+      track == TrackId::A ? project_.track_a.midi_channel : project_.track_b.midi_channel;
+  const uint8_t note = hardware_test_note(track);
+  const int8_t octave = static_cast<int8_t>(note / 12U) - 1;
+
+  app_.clear_manual_test_outputs();
+
+  if (high) {
+    if (hardware_test_mode_ != HardwareTestMode::GateOnly) {
+      app_.set_manual_note(track, midi_channel, note, kHardwareTestVelocity, true);
+    }
+    if (hardware_test_mode_ != HardwareTestMode::MidiOnly) {
+      app_.set_manual_gate(track, true);
+    }
+  }
+
+  if (hardware_test_mode_ == HardwareTestMode::GateOnly) {
+    snprintf(hardware_test_status_, sizeof(hardware_test_status_), "%c %s Gate",
+             track == TrackId::A ? 'A' : 'B', high ? "On" : "Off");
+    return;
+  }
+
+  snprintf(hardware_test_status_, sizeof(hardware_test_status_), "%c %s Ch%02u %s%d",
+           track == TrackId::A ? 'A' : 'B', high ? "On" : "Off",
+           static_cast<unsigned>(midi_channel), note_name(note), static_cast<int>(octave));
+}
+
 Track& UiController::focused_track() {
   return track_focus_ == TrackId::A ? project_.track_a : project_.track_b;
 }
@@ -569,6 +852,22 @@ void UiController::edit_global_value(int8_t delta) {
       snprintf(value, sizeof(value), "%u.%u BPM",
                static_cast<unsigned>(project_.tempo_bpm_x10 / 10U),
                static_cast<unsigned>(project_.tempo_bpm_x10 % 10U));
+      break;
+    }
+    case GlobalTarget::ClockSource: {
+      ClockSource source = app_.clock_source();
+      source = source == ClockSource::Internal ? ClockSource::ExternalMidi : ClockSource::Internal;
+      app_.set_clock_source(source);
+      snprintf(value, sizeof(value), "%s",
+               source == ClockSource::ExternalMidi ? "External" : "Internal");
+      break;
+    }
+    case GlobalTarget::MachineMode: {
+      project_.machine_mode = project_.machine_mode == MachineMode::Dual ? MachineMode::Chain20
+                                                                         : MachineMode::Dual;
+      reset_playhead = true;
+      snprintf(value, sizeof(value), "%s",
+               project_.machine_mode == MachineMode::Chain20 ? "Chain20" : "Dual");
       break;
     }
     case GlobalTarget::Root: {

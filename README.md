@@ -47,12 +47,14 @@ Point d'entrée recommandé :
 2. [docs/product/DIX_PAS_DECISIONS.md](docs/product/DIX_PAS_DECISIONS.md)
 3. [LICENSING.md](LICENSING.md)
 4. [docs/setup/DIX_PAS_SETUP_MAC.md](docs/setup/DIX_PAS_SETUP_MAC.md)
-5. [docs/engineering/DIX_PAS_document_technique.md](docs/engineering/DIX_PAS_document_technique.md)
-6. [docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md](docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md)
-7. [docs/engineering/DIX_PAS_UI_STATE_MACHINE.md](docs/engineering/DIX_PAS_UI_STATE_MACHINE.md)
-8. [docs/engineering/DIX_PAS_PRESET_FORMAT.md](docs/engineering/DIX_PAS_PRESET_FORMAT.md)
-9. [bom/DIX_PAS_BOM_v0.md](bom/DIX_PAS_BOM_v0.md)
-10. [docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md](docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md)
+5. [docs/setup/DIX_PAS_CABLAGE_REFERENCE.md](docs/setup/DIX_PAS_CABLAGE_REFERENCE.md)
+6. [docs/setup/DIX_PAS_BRING_UP_HARDWARE.md](docs/setup/DIX_PAS_BRING_UP_HARDWARE.md)
+7. [docs/engineering/DIX_PAS_document_technique.md](docs/engineering/DIX_PAS_document_technique.md)
+8. [docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md](docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md)
+9. [docs/engineering/DIX_PAS_UI_STATE_MACHINE.md](docs/engineering/DIX_PAS_UI_STATE_MACHINE.md)
+10. [docs/engineering/DIX_PAS_PRESET_FORMAT.md](docs/engineering/DIX_PAS_PRESET_FORMAT.md)
+11. [bom/DIX_PAS_BOM_v0.md](bom/DIX_PAS_BOM_v0.md)
+12. [docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md](docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md)
 
 Documents annexes :
 
