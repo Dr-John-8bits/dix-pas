@@ -42,7 +42,7 @@ Hypotheses retenues :
 | Buffer partagé MIDI OUT / Gate | 1 | 74HCS125 | 74HC125 | 1 canal MIDI OUT, 2 canaux Gate, 1 canal libre |
 | Registre a décalage entrée | 5 | 74HC165 | SN74HC165 | Jusqu'à 40 entrées utilisateur |
 | Registre a décalage sortie | 3 | 74HC595 | SN74HC595 | Jusqu'à 24 sorties LEDs |
-| Condensateurs de decouplage | 9 | 100 nF ceramique | Equivalent | 1 par CI minimum |
+| Condensateurs de decouplage | 10 | 100 nF ceramique | Equivalent | 1 par CI minimum |
 
 ---
 
@@ -52,7 +52,7 @@ Hypotheses retenues :
 | --- | ---: | --- | --- | --- |
 | Connecteur MIDI IN | 1 | REAN NYS325 | Lumberg 0103 | DIN 5 broches femelle châssis |
 | Connecteur MIDI OUT | 1 | REAN NYS325 | Lumberg 0103 | DIN 5 broches femelle châssis |
-| Optocoupleur MIDI IN | 1 | 6N138 | H11L1 | Le schéma exact dependra du composant retenu |
+| Optocoupleur MIDI IN | 1 | 6N138 | H11L1 | Reference de travail V1, validation breadboard requise |
 | Resistances MIDI OUT | 2 | 220 ohm 1/4 W | Equivalent | Valeur standard du current loop 5 V |
 | Resistance MIDI IN serie | 1 | 220 ohm 1/4 W | Equivalent | Serie entree opto |
 | Resistance MIDI IN pull-up | 1 | 10 kohm | Equivalent | Pull-up sortie `6N138` |
@@ -123,15 +123,12 @@ Hypotheses retenues :
 
 ## 10. Points encore a verrouiller
 
-Cette BOM ne figé pas encore :
+Cette BOM ne fige pas encore :
 
 - la référence mécanique exacte du jack d'alimentation
-- les valeurs complètes de l'étage MIDI IN
-- la topologie finale de l'étage Gate Out
 - la couleur finale des LEDs
 - la presence ou non de LEDs sur la troisième rangée
 - le type exact de boîtier
-- la référence finale de l'écran
 
 ---
 

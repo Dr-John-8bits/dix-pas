@@ -217,12 +217,10 @@ Usages possibles plus tard :
 
 ## 9. Points a verrouiller plus tard
 
-Ce document ne figé pas encore :
+Ce document ne fige pas encore :
 
-- le schéma exact du buffer MIDI OUT
-- le schéma exact du MIDI IN
-- la topologie exacte des Gate Out
 - la presence finale des LEDs système directes
+- le brochage mécanique final des connecteurs de panneau
 
 ---
 
