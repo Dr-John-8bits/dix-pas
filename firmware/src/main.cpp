@@ -1,5 +1,9 @@
 #include "dixpas/app.hpp"
 #include "dixpas/display_engine.hpp"
+#include "dixpas/fram_i2c_backend.hpp"
+#include "dixpas/generative_engine.hpp"
+#include "dixpas/music_scales.hpp"
+#include "dixpas/oled_display.hpp"
 #include "dixpas/panel_led_driver.hpp"
 #include "dixpas/storage_engine.hpp"
 #include "dixpas/ui_hardware.hpp"
@@ -8,7 +12,7 @@
 
 #if defined(ARDUINO)
 #include <Arduino.h>
-#else
+#elif !defined(PIO_UNIT_TESTING)
 #include <cstdio>
 #endif
 
@@ -19,9 +23,17 @@ constexpr uint8_t kGateOutAPin = 5;
 constexpr uint8_t kGateOutBPin = 6;
 
 dixpas::App g_app;
+dixpas::WireFramI2cPort g_fram_port;
+dixpas::FramI2cBackend g_fram_backend(g_fram_port);
+dixpas::StorageEngine g_storage(g_fram_backend);
 dixpas::UiController g_ui(g_app);
 dixpas::UiScanner g_ui_scanner;
 dixpas::UiHardware g_ui_hardware;
+dixpas::WireOledI2cPort g_oled_port;
+dixpas::OledDisplay g_oled_display(g_oled_port);
+dixpas::DisplayEngine g_display_engine;
+dixpas::DisplayFrame g_display_frame{};
+dixpas::DisplayFrame g_previous_display_frame{};
 dixpas::PanelLedDriver g_panel_led_driver;
 dixpas::PanelLedFrame g_panel_led_frame{};
 uint32_t g_last_tick_micros = 0;
@@ -43,6 +55,18 @@ void sync_panel_leds() {
   const bool blink_on = ((millis() / 120U) % 2U) == 0U;
   g_panel_led_driver.render(g_app, g_ui, blink_on, g_panel_led_frame);
   g_panel_led_driver.write(g_panel_led_frame);
+}
+
+void sync_display() {
+  g_display_engine.render(g_app, g_ui, g_display_frame);
+  if (dixpas::DisplayEngine::equals(g_display_frame, g_previous_display_frame)) {
+    return;
+  }
+
+  if (g_oled_display.is_ready()) {
+    g_oled_display.render(g_display_frame);
+  }
+  g_previous_display_frame = g_display_frame;
 }
 
 void process_ui_inputs() {
@@ -76,8 +100,18 @@ void setup() {
   digitalWrite(kGateOutBPin, LOW);
 
   Serial1.begin(31250);
+  const bool storage_ready = g_fram_backend.begin();
+  g_oled_display.begin();
   g_ui_hardware.begin();
   g_panel_led_driver.begin();
+
+  if (storage_ready) {
+    dixpas::StorageMetadataV1 metadata{};
+    if (g_storage.load_metadata(metadata) != dixpas::StorageStatus::Ok) {
+      g_storage.save_metadata(dixpas::StorageEngine::build_default_metadata());
+    }
+    g_ui.attach_storage(g_storage);
+  }
 
   g_app.seed_demo_project();
   g_ui.reset();
@@ -85,6 +119,7 @@ void setup() {
   g_last_tick_micros = micros();
   g_last_ui_update_millis = millis();
   sync_gate_outputs();
+  sync_display();
   sync_panel_leds();
 }
 
@@ -116,6 +151,7 @@ void loop() {
 
   flush_midi_bytes();
   sync_gate_outputs();
+  sync_display();
   sync_panel_leds();
 }
 
@@ -161,6 +197,25 @@ const char* ui_event_name(dixpas::UiInputEventType type) {
   }
 
   return "UI";
+}
+
+const char* contour_name(dixpas::MelodyContour contour) {
+  switch (contour) {
+    case dixpas::MelodyContour::Ascending:
+      return "Ascending";
+    case dixpas::MelodyContour::Descending:
+      return "Descending";
+    case dixpas::MelodyContour::PingPong:
+      return "PingPong";
+    case dixpas::MelodyContour::Random:
+      return "Random";
+    case dixpas::MelodyContour::RandomWalk:
+      return "RandomWalk";
+    case dixpas::MelodyContour::Alternating:
+      return "Alternating";
+  }
+
+  return "Contour";
 }
 
 int main() {
@@ -286,6 +341,38 @@ int main() {
     }
   };
 
+  auto cycle_global_target_to = [&](dixpas::GlobalTarget target, const char* label) {
+    uint8_t attempts = 0U;
+    while (ui.global_target() != target && attempts < 16U) {
+      tap_button(input.mode_button, label);
+      ++attempts;
+    }
+
+    if (ui.global_target() != target) {
+      std::printf("warning: unable to reach global target %u\n",
+                  static_cast<unsigned>(target));
+    }
+  };
+
+  auto print_generated_track = [&](const char* label, const dixpas::ProjectState& project,
+                                   dixpas::TrackId track_id) {
+    const dixpas::Track& track =
+        track_id == dixpas::TrackId::A ? project.track_a : project.track_b;
+    const char track_name = track_id == dixpas::TrackId::A ? 'A' : 'B';
+    std::printf("== %s / Track %c ==\n", label, track_name);
+    for (uint8_t index = 0; index < track.length; ++index) {
+      const dixpas::Step& step = track.steps[index];
+      const uint8_t midi_note = dixpas::resolve_scale_note(project.root_note, project.scale_id,
+                                                           step.degree, track.octave_offset);
+      const int octave = static_cast<int>(midi_note / 12U) - 1;
+      std::printf("step=%02u active=%u degree=%02u note=%s%d prob=%u gate=%u vel=%u\n",
+                  static_cast<unsigned>(index + 1U), step.active ? 1U : 0U,
+                  static_cast<unsigned>(step.degree), dixpas::note_name(midi_note), octave,
+                  static_cast<unsigned>(step.probability), static_cast<unsigned>(step.gate),
+                  static_cast<unsigned>(step.velocity));
+    }
+  };
+
   app.seed_demo_project();
   app.set_random_seed(0x1234ABCDU);
   storage.save_metadata(dixpas::StorageEngine::build_default_metadata());
@@ -356,6 +443,25 @@ int main() {
   app.receive_midi_byte(0xFCU);
   render_frame();
   drain_outputs("external stop");
+
+  std::puts("generative engine simulation");
+  long_press_button(input.mode_button, 500U, "mode long");
+  cycle_global_target_to(dixpas::GlobalTarget::GenerativeSlot, "mode short");
+  tap_button(input.encoder_button, "apply generative");
+  print_generated_track("generated", app.project(), dixpas::TrackId::A);
+  print_generated_track("generated", app.project(), dixpas::TrackId::B);
+
+  input.shift_button = true;
+  advance_ui(25U, "shift mutate");
+  tap_button(input.encoder_button, "mutate generative");
+  input.shift_button = false;
+  advance_ui(25U, "shift release");
+  print_generated_track("mutated", app.project(), dixpas::TrackId::A);
+
+  rotate_encoder_steps(1, "generative slot");
+  tap_button(input.encoder_button, "apply generative");
+  print_generated_track("generated", app.project(), dixpas::TrackId::A);
+  print_generated_track("generated", app.project(), dixpas::TrackId::B);
   return 0;
 }
 

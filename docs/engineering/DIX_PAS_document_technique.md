@@ -258,6 +258,14 @@ Recommandation concrète :
 
 - module compatible **SSD1306** ou **SH1106**
 
+Hypothèse firmware actuelle :
+
+- cible principale : **SSD1306**
+- adresse I2C OLED retenue par défaut : `0x3C`
+- rendu texte sur `4 lignes`
+- police bitmap simple intégrée au firmware, sans dépendance externe
+- rendu paginé sans framebuffer complet pour préserver la RAM du `Nano Every`
+
 Le rôle de l'écran est d'afficher :
 
 - le pas édité
@@ -333,6 +341,12 @@ Pourquoi :
 - ecritures très rapides
 - usure quasi negligeable
 - logique de sauvegarde plus simple
+
+Hypothèse firmware actuelle :
+
+- adresse I2C FRAM retenue : `0x50`
+- adressage mémoire sur `16 bits`
+- transferts découpés en petits blocs pour rester compatibles avec les limites de buffer Arduino
 
 ---
 

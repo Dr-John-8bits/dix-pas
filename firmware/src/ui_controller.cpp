@@ -62,6 +62,8 @@ const char* global_target_name(GlobalTarget target) {
       return "MIDI Ch";
     case GlobalTarget::PresetSlot:
       return "Preset";
+    case GlobalTarget::GenerativeSlot:
+      return "Generative";
   }
 
   return "Global";
@@ -98,6 +100,7 @@ void UiController::reset() {
   global_target_ = GlobalTarget::Tempo;
   shift_held_ = false;
   preset_slot_ = 0U;
+  generative_slot_ = 0U;
   overlay_ = {};
   overlay_timeout_ms_ = 0U;
   restore_preset_slot_from_metadata();
@@ -205,8 +208,16 @@ void UiController::press_encoder_button() {
       }
       return;
     }
+    if (global_target_ == GlobalTarget::GenerativeSlot) {
+      if (shift_held_) {
+        mutate_selected_generative_slot();
+      } else {
+        apply_selected_generative_slot();
+      }
+      return;
+    }
 
-    global_target_ = static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 7U));
+    global_target_ = static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 8U));
     show_global_overlay(global_target_name(global_target_), "Selected");
     return;
   }
@@ -218,6 +229,13 @@ void UiController::press_encoder_button() {
 }
 
 void UiController::press_mode_short() {
+  if (page_ == UiPage::GlobalEdit) {
+    global_target_ =
+        static_cast<GlobalTarget>(wrap_increment(static_cast<uint8_t>(global_target_), 8U));
+    show_global_overlay(global_target_name(global_target_), "Selected");
+    return;
+  }
+
   row3_base_mode_ = row3_base_mode_ == Row3BaseMode::Probability ? Row3BaseMode::OnOff
                                                                   : Row3BaseMode::Probability;
   show_global_overlay("Row 3",
@@ -241,6 +259,8 @@ void UiController::set_shift_held(bool held) {
   if (held) {
     if (page_ == UiPage::GlobalEdit && global_target_ == GlobalTarget::PresetSlot) {
       show_global_overlay("Shift", "Save");
+    } else if (page_ == UiPage::GlobalEdit && global_target_ == GlobalTarget::GenerativeSlot) {
+      show_global_overlay("Shift", "Mutate");
     } else {
       show_global_overlay("Shift", "Ratchet");
     }
@@ -334,6 +354,34 @@ void UiController::save_selected_preset() {
   char value[32];
   snprintf(value, sizeof(value), "Saved Slot %u", static_cast<unsigned>(preset_slot_ + 1U));
   show_global_overlay("Preset", value);
+}
+
+void UiController::apply_selected_generative_slot() {
+  if (!app_.has_generative_slot(generative_slot_)) {
+    show_global_overlay("Generative", "Empty slot");
+    return;
+  }
+
+  app_.apply_generative_slot(generative_slot_, true);
+  project_ = app_.project();
+
+  char value[32];
+  snprintf(value, sizeof(value), "Applied G%u", static_cast<unsigned>(generative_slot_ + 1U));
+  show_global_overlay("Generative", value);
+}
+
+void UiController::mutate_selected_generative_slot() {
+  if (!app_.has_generative_slot(generative_slot_)) {
+    show_global_overlay("Generative", "Empty slot");
+    return;
+  }
+
+  app_.mutate_generative_slot(generative_slot_, false);
+  project_ = app_.project();
+
+  char value[32];
+  snprintf(value, sizeof(value), "Mutated G%u", static_cast<unsigned>(generative_slot_ + 1U));
+  show_global_overlay("Generative", value);
 }
 
 void UiController::update_storage_metadata(bool saved) {
@@ -586,6 +634,18 @@ void UiController::edit_global_value(int8_t delta) {
       }
       preset_slot_ = static_cast<uint8_t>(slot);
       snprintf(value, sizeof(value), "Slot %u", static_cast<unsigned>(preset_slot_ + 1U));
+      break;
+    }
+    case GlobalTarget::GenerativeSlot: {
+      int16_t slot = static_cast<int16_t>(generative_slot_) + delta;
+      while (slot < 0) {
+        slot += kGenerativeSlotCount;
+      }
+      while (slot >= kGenerativeSlotCount) {
+        slot -= kGenerativeSlotCount;
+      }
+      generative_slot_ = static_cast<uint8_t>(slot);
+      snprintf(value, sizeof(value), "G%u", static_cast<unsigned>(generative_slot_ + 1U));
       break;
     }
   }

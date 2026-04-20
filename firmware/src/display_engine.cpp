@@ -52,6 +52,8 @@ const char* global_target_label(GlobalTarget target) {
       return "MIDI";
     case GlobalTarget::PresetSlot:
       return "Preset";
+    case GlobalTarget::GenerativeSlot:
+      return "Gen";
     case GlobalTarget::Tempo:
     default:
       return "Tempo";
@@ -129,6 +131,13 @@ void render_home_footer(const App& app, const UiController& ui, char* dst) {
   } else if (ui.page() == UiPage::GlobalEdit &&
              ui.global_target() == GlobalTarget::PresetSlot) {
     format_line(dst, "P%u BtnLd Sh+BtnSv", static_cast<unsigned>(ui.preset_slot() + 1U));
+  } else if (ui.page() == UiPage::GlobalEdit &&
+             ui.global_target() == GlobalTarget::GenerativeSlot &&
+             ui.shift_held()) {
+    format_line(dst, "G%u Shift=Mut", static_cast<unsigned>(ui.generative_slot() + 1U));
+  } else if (ui.page() == UiPage::GlobalEdit &&
+             ui.global_target() == GlobalTarget::GenerativeSlot) {
+    format_line(dst, "G%u BtnGo Sh+Mut", static_cast<unsigned>(ui.generative_slot() + 1U));
   } else if (ui.shift_held()) {
     format_line(dst, "Shift Ratchet P%u", static_cast<unsigned>(ui.preset_slot() + 1U));
   } else if (ui.page() == UiPage::GlobalEdit) {
@@ -169,6 +178,9 @@ void render_global_value_line(const App& app, const UiController& ui, char* dst)
       break;
     case GlobalTarget::PresetSlot:
       format_line(dst, "Preset Slot %u", static_cast<unsigned>(ui.preset_slot() + 1U));
+      break;
+    case GlobalTarget::GenerativeSlot:
+      format_line(dst, "Gen Slot %u", static_cast<unsigned>(ui.generative_slot() + 1U));
       break;
   }
 }

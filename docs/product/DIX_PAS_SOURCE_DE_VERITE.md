@@ -284,6 +284,12 @@ La V1 n'inclut pas :
 - moteur Euclidean dans le build week-end
 - moteur génératif dans le build week-end
 
+Nuance de développement validée :
+
+- le firmware peut préparer et exposer ces fonctions en mode expérimental
+- elles ne sont pas requises pour considérer la V1 hardware comme réussie
+- elles ne doivent pas ralentir le bring-up matériel ni compliquer l'interface de base
+
 ---
 
 ## 10. Compatibilité V2
@@ -329,6 +335,12 @@ Les évolutions les plus pertinentes sont :
 - Euclidean
 - génération mélodique par gamme
 - variations génératives contrôlées
+
+État logiciel actuel accepté :
+
+- le firmware peut déjà proposer des slots génératifs internes
+- ces slots peuvent être appliqués ou mutés depuis l'édition globale
+- cette avance logicielle est autorisée tant qu'elle reste modulaire
 
 Ces évolutions sont désirées, mais ne doivent pas ralentir la mise au point de la V1.
 

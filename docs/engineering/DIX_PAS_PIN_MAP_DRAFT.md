@@ -185,6 +185,10 @@ Broches retenues :
 Remarque :
 
 - si plusieurs modules I2C sont utilisés, il faudra verifier les adresses et la qualite du bus
+- hypothèse actuelle : OLED en `0x3C`
+- hypothèse actuelle : FRAM en `0x50`
+- le firmware OLED vise d'abord un module `SSD1306`
+- le firmware découpe les transferts FRAM pour rester sous les limites de buffer I2C Arduino
 
 ---
 

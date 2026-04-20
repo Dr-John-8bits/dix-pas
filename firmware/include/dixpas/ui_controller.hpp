@@ -27,6 +27,7 @@ enum class GlobalTarget : uint8_t {
   TrackLength = 4,
   MidiChannel = 5,
   PresetSlot = 6,
+  GenerativeSlot = 7,
 };
 
 enum class UiPage : uint8_t {
@@ -69,6 +70,7 @@ class UiController {
   [[nodiscard]] GlobalTarget global_target() const { return global_target_; }
   [[nodiscard]] bool shift_held() const { return shift_held_; }
   [[nodiscard]] uint8_t preset_slot() const { return preset_slot_; }
+  [[nodiscard]] uint8_t generative_slot() const { return generative_slot_; }
   [[nodiscard]] const UiOverlay& overlay() const { return overlay_; }
 
  private:
@@ -85,6 +87,7 @@ class UiController {
   GlobalTarget global_target_ = GlobalTarget::Tempo;
   bool shift_held_ = false;
   uint8_t preset_slot_ = 0;
+  uint8_t generative_slot_ = 0;
   UiOverlay overlay_{};
   uint16_t overlay_timeout_ms_ = 0;
   StorageEngine* storage_ = nullptr;
@@ -96,6 +99,8 @@ class UiController {
   void show_transport_overlay(const char* label);
   void load_selected_preset();
   void save_selected_preset();
+  void apply_selected_generative_slot();
+  void mutate_selected_generative_slot();
   void update_storage_metadata(bool saved);
   void show_storage_overlay(const char* action, StorageStatus status);
   void restore_preset_slot_from_metadata();

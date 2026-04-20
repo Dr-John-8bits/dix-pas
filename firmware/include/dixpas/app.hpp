@@ -5,6 +5,7 @@
 #include "dixpas/clock_engine.hpp"
 #include "dixpas/fixed_queue.hpp"
 #include "dixpas/gate_output_engine.hpp"
+#include "dixpas/generative_engine.hpp"
 #include "dixpas/midi_din_engine.hpp"
 #include "dixpas/midi_din_input_engine.hpp"
 #include "dixpas/sequencer_engine.hpp"
@@ -22,6 +23,12 @@ class App {
 
   void seed_demo_project();
   void set_random_seed(uint32_t seed);
+  bool load_generative_recipe(uint8_t slot, GenerativeRecipe& recipe) const;
+  bool has_generative_slot(uint8_t slot) const;
+  void apply_generative_slot(uint8_t slot, bool reset_playhead);
+  void mutate_generative_slot(uint8_t slot, bool reset_playhead);
+  void apply_generative_recipe(const GenerativeRecipe& recipe, bool reset_playhead);
+  void mutate_from_generative_recipe(const GenerativeRecipe& recipe, bool reset_playhead);
   void set_clock_source(ClockSource source);
   [[nodiscard]] ClockSource clock_source() const { return clock_.clock_source(); }
 
@@ -54,12 +61,17 @@ class App {
 
   ClockEngine clock_{};
   SequencerEngine sequencer_{};
+  GenerativeEngine generator_{};
+  GenerativeBank generative_bank_{};
   MidiDinEngine midi_{};
   MidiDinInputEngine midi_in_{};
   GateOutputEngine gates_{};
   FixedQueue<EngineEvent, kMonitorQueueCapacity> monitor_queue_{};
 
   static ProjectState build_default_project();
+  void seed_demo_generative_bank();
+  static GenerativeRecipe build_demo_recipe_dorian();
+  static GenerativeRecipe build_demo_recipe_chromatic();
   void process_pending_engine_events();
   void process_pending_midi_input_events();
   void advance_from_external_clock();

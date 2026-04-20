@@ -3,6 +3,7 @@
 namespace dixpas {
 
 App::App() {
+  seed_demo_generative_bank();
   load_project(build_default_project());
 }
 
@@ -51,6 +52,44 @@ void App::seed_demo_project() {
 
 void App::set_random_seed(uint32_t seed) {
   sequencer_.set_random_seed(seed);
+}
+
+bool App::load_generative_recipe(uint8_t slot, GenerativeRecipe& recipe) const {
+  return generative_bank_.load(slot, recipe);
+}
+
+bool App::has_generative_slot(uint8_t slot) const {
+  return generative_bank_.has_slot(slot);
+}
+
+void App::apply_generative_slot(uint8_t slot, bool reset_playhead) {
+  GenerativeRecipe recipe{};
+  if (!generative_bank_.load(slot, recipe)) {
+    return;
+  }
+
+  apply_generative_recipe(recipe, reset_playhead);
+}
+
+void App::mutate_generative_slot(uint8_t slot, bool reset_playhead) {
+  GenerativeRecipe recipe{};
+  if (!generative_bank_.load(slot, recipe)) {
+    return;
+  }
+
+  mutate_from_generative_recipe(recipe, reset_playhead);
+}
+
+void App::apply_generative_recipe(const GenerativeRecipe& recipe, bool reset_playhead) {
+  ProjectState generated_project = project();
+  generator_.apply_recipe(generated_project, recipe);
+  apply_project(generated_project, reset_playhead);
+}
+
+void App::mutate_from_generative_recipe(const GenerativeRecipe& recipe, bool reset_playhead) {
+  ProjectState mutated_project = project();
+  generator_.mutate_project(mutated_project, recipe);
+  apply_project(mutated_project, reset_playhead);
 }
 
 void App::start() {
@@ -113,6 +152,71 @@ ProjectState App::build_default_project() {
   project.track_a.midi_channel = 1;
   project.track_b.midi_channel = 2;
   return project;
+}
+
+void App::seed_demo_generative_bank() {
+  generative_bank_.clear();
+  generative_bank_.store(0, build_demo_recipe_dorian());
+  generative_bank_.store(1, build_demo_recipe_chromatic());
+}
+
+GenerativeRecipe App::build_demo_recipe_dorian() {
+  GenerativeRecipe recipe{};
+  recipe.seed = 0x20260420U;
+  recipe.root_note = 9U;   // A
+  recipe.scale_id = 5U;    // Dorian
+  recipe.machine_mode = MachineMode::Dual;
+  recipe.play_mode = PlayMode::Forward;
+  recipe.mutate_track_a_on_cycle = true;
+  recipe.track_a.settings.rhythm.length = 10;
+  recipe.track_a.settings.rhythm.pulses = 4;
+  recipe.track_a.settings.rhythm.rotation = 1;
+  recipe.track_a.settings.melody.contour = MelodyContour::RandomWalk;
+  recipe.track_a.settings.melody.min_degree = 0;
+  recipe.track_a.settings.melody.max_degree = 9;
+  recipe.track_a.settings.melody.octave_offset = 0;
+  recipe.track_a.settings.melody.probability = 100;
+  recipe.track_a.settings.melody.gate = 75;
+  recipe.track_a.settings.melody.velocity = 104;
+  recipe.track_a.settings.mutation.enabled = true;
+  recipe.track_a.settings.mutation.chance_percent = 100;
+  recipe.track_a.settings.mutation.max_degree_delta = 2;
+  recipe.track_a.settings.mutation.probability_jitter = 10;
+  recipe.track_b.settings.rhythm.length = 10;
+  recipe.track_b.settings.rhythm.pulses = 7;
+  recipe.track_b.settings.rhythm.rotation = 0;
+  recipe.track_b.settings.melody.contour = MelodyContour::Alternating;
+  recipe.track_b.settings.melody.min_degree = 2;
+  recipe.track_b.settings.melody.max_degree = 12;
+  recipe.track_b.settings.melody.octave_offset = -1;
+  recipe.track_b.settings.melody.probability = 90;
+  recipe.track_b.settings.melody.gate = 60;
+  recipe.track_b.settings.melody.velocity = 96;
+  return recipe;
+}
+
+GenerativeRecipe App::build_demo_recipe_chromatic() {
+  GenerativeRecipe recipe{};
+  recipe.seed = 0x20260421U;
+  recipe.root_note = 0U;   // C
+  recipe.scale_id = 11U;   // Chromatic
+  recipe.machine_mode = MachineMode::Chain20;
+  recipe.play_mode = PlayMode::PingPong;
+  recipe.track_a.settings.rhythm.length = 10;
+  recipe.track_a.settings.rhythm.pulses = 5;
+  recipe.track_a.settings.rhythm.rotation = 0;
+  recipe.track_a.settings.melody.contour = MelodyContour::Ascending;
+  recipe.track_a.settings.melody.min_degree = 0;
+  recipe.track_a.settings.melody.max_degree = 11;
+  recipe.track_a.settings.melody.octave_offset = 0;
+  recipe.track_b.settings.rhythm.length = 10;
+  recipe.track_b.settings.rhythm.pulses = 3;
+  recipe.track_b.settings.rhythm.rotation = 2;
+  recipe.track_b.settings.melody.contour = MelodyContour::Descending;
+  recipe.track_b.settings.melody.min_degree = 0;
+  recipe.track_b.settings.melody.max_degree = 11;
+  recipe.track_b.settings.melody.octave_offset = 1;
+  return recipe;
 }
 
 void App::process_pending_engine_events() {
