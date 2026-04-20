@@ -2,6 +2,7 @@
 #include "dixpas/display_engine.hpp"
 #include "dixpas/storage_engine.hpp"
 #include "dixpas/ui_controller.hpp"
+#include "dixpas/ui_scanner.hpp"
 
 #if defined(ARDUINO)
 #include <Arduino.h>
@@ -88,11 +89,40 @@ const char* event_type_name(dixpas::EventType type) {
   return "UNKNOWN ";
 }
 
+const char* ui_event_name(dixpas::UiInputEventType type) {
+  switch (type) {
+    case dixpas::UiInputEventType::TrackStepPressed:
+      return "TRACK_STEP";
+    case dixpas::UiInputEventType::Row3Pressed:
+      return "ROW3";
+    case dixpas::UiInputEventType::EncoderTurned:
+      return "ENCODER";
+    case dixpas::UiInputEventType::EncoderButtonPressed:
+      return "ENC_BTN";
+    case dixpas::UiInputEventType::ModeShortPressed:
+      return "MODE_SHORT";
+    case dixpas::UiInputEventType::ModeLongPressed:
+      return "MODE_LONG";
+    case dixpas::UiInputEventType::ShiftChanged:
+      return "SHIFT";
+    case dixpas::UiInputEventType::PlayPressed:
+      return "PLAY";
+    case dixpas::UiInputEventType::StopPressed:
+      return "STOP";
+    case dixpas::UiInputEventType::ResetPressed:
+      return "RESET";
+  }
+
+  return "UI";
+}
+
 int main() {
   dixpas::App app;
   dixpas::MemoryStorageBackend storage_backend;
   dixpas::StorageEngine storage(storage_backend);
   dixpas::UiController ui(app, &storage);
+  dixpas::UiScanner scanner;
+  dixpas::UiInputSnapshot input{};
   dixpas::DisplayEngine display;
   dixpas::DisplayFrame frame{};
   dixpas::DisplayFrame previous_frame{};
@@ -137,10 +167,83 @@ int main() {
     }
   };
 
+  auto flush_scanner_events = [&](const char* label) {
+    bool printed_label = false;
+    dixpas::UiInputEvent event;
+    while (scanner.pop_event(event)) {
+      if (!printed_label) {
+        std::printf("== %s ==\n", label);
+        printed_label = true;
+      }
+
+      std::printf("ui=%s", ui_event_name(event.type));
+      if (event.type == dixpas::UiInputEventType::TrackStepPressed) {
+        std::printf(" track=%c index=%u", event.track == dixpas::TrackId::A ? 'A' : 'B',
+                    static_cast<unsigned>(event.index + 1U));
+      } else if (event.type == dixpas::UiInputEventType::Row3Pressed) {
+        std::printf(" index=%u", static_cast<unsigned>(event.index + 1U));
+      } else if (event.type == dixpas::UiInputEventType::EncoderTurned) {
+        std::printf(" delta=%d", static_cast<int>(event.delta));
+      } else if (event.type == dixpas::UiInputEventType::ShiftChanged) {
+        std::printf(" pressed=%u", event.pressed ? 1U : 0U);
+      }
+      std::printf("\n");
+
+      dixpas::dispatch_ui_event(ui, event);
+    }
+
+    render_frame();
+    drain_outputs(label);
+  };
+
+  auto advance_ui = [&](uint16_t elapsed_ms, const char* label) {
+    ui.update(elapsed_ms);
+    scanner.update(input, elapsed_ms);
+    flush_scanner_events(label);
+  };
+
+  auto tap_button = [&](bool& button, const char* label) {
+    button = true;
+    advance_ui(25U, label);
+    button = false;
+    advance_ui(25U, label);
+  };
+
+  auto long_press_button = [&](bool& button, uint16_t hold_ms, const char* label) {
+    button = true;
+    advance_ui(25U, label);
+    advance_ui(hold_ms, label);
+    button = false;
+    advance_ui(25U, label);
+  };
+
+  auto rotate_encoder_steps = [&](int8_t steps, const char* label) {
+    static constexpr uint8_t kClockwiseSequence[5][2] = {
+        {0U, 0U}, {1U, 0U}, {1U, 1U}, {0U, 1U}, {0U, 0U},
+    };
+    static constexpr uint8_t kCounterClockwiseSequence[5][2] = {
+        {0U, 0U}, {0U, 1U}, {1U, 1U}, {1U, 0U}, {0U, 0U},
+    };
+
+    const uint8_t (*sequence)[2] =
+        steps >= 0 ? kClockwiseSequence : kCounterClockwiseSequence;
+    const uint8_t step_count = steps >= 0 ? static_cast<uint8_t>(steps)
+                                          : static_cast<uint8_t>(-steps);
+
+    for (uint8_t step = 0; step < step_count; ++step) {
+      for (uint8_t state_index = 0; state_index < 5U; ++state_index) {
+        input.encoder_phase_a = sequence[state_index][0] != 0U;
+        input.encoder_phase_b = sequence[state_index][1] != 0U;
+        advance_ui(1U, label);
+      }
+    }
+  };
+
   app.seed_demo_project();
   app.set_random_seed(0x1234ABCDU);
   storage.save_metadata(dixpas::StorageEngine::build_default_metadata());
   ui.reset();
+  scanner.reset();
 
   const dixpas::StorageStatus save_status = storage.save_preset(0, app.project());
   dixpas::ProjectState restored_project{};
@@ -150,48 +253,32 @@ int main() {
               static_cast<unsigned>(load_status), restored_project.tempo_bpm_x10);
   render_frame();
 
-  ui.press_track_step(dixpas::TrackId::A, 0);
-  render_frame();
-  ui.rotate_encoder(2);
-  render_frame();
-  ui.press_mode_short();
-  render_frame();
-  ui.press_row3(0);
-  render_frame();
-  ui.update(1600);
-  render_frame();
+  tap_button(input.track_a_steps[0], "track step select");
+  rotate_encoder_steps(2, "encoder rotate");
+  tap_button(input.mode_button, "mode short");
+  tap_button(input.row3_steps[0], "row3 toggle");
+  advance_ui(1600U, "ui timeout");
 
-  ui.press_mode_long();
-  render_frame();
+  long_press_button(input.mode_button, 500U, "mode long");
   for (uint8_t index = 0; index < 6U; ++index) {
-    ui.press_encoder_button();
+    tap_button(input.encoder_button, "encoder button");
   }
-  render_frame();
-  ui.rotate_encoder(1);
-  render_frame();
-  ui.set_shift_held(true);
-  render_frame();
-  ui.press_encoder_button();
-  render_frame();
-  ui.set_shift_held(false);
-  render_frame();
-  ui.press_mode_long();
-  render_frame();
+  rotate_encoder_steps(1, "preset slot");
+  input.shift_button = true;
+  advance_ui(25U, "shift save");
+  tap_button(input.encoder_button, "preset save");
+  input.shift_button = false;
+  advance_ui(25U, "shift release");
+  long_press_button(input.mode_button, 500U, "mode long");
 
-  ui.press_track_step(dixpas::TrackId::A, 0);
-  ui.rotate_encoder(4);
-  render_frame();
-  ui.press_mode_long();
-  render_frame();
-  ui.press_encoder_button();
-  render_frame();
-  ui.press_mode_long();
-  render_frame();
+  tap_button(input.track_a_steps[0], "track step select");
+  rotate_encoder_steps(4, "encoder rotate");
+  long_press_button(input.mode_button, 500U, "mode long");
+  tap_button(input.encoder_button, "preset load");
+  long_press_button(input.mode_button, 500U, "mode long");
 
   app.set_clock_source(dixpas::ClockSource::Internal);
-  ui.press_play();
-  render_frame();
-  drain_outputs("transport start");
+  tap_button(input.play_button, "play button");
 
   for (uint16_t i = 0; i < 8U * dixpas::kTicksPerStep; ++i) {
     if ((i % dixpas::kTicksPerStep) == 0U) {
@@ -204,13 +291,13 @@ int main() {
     }
   }
 
-  ui.press_stop();
-  render_frame();
-  drain_outputs("transport stop");
+  tap_button(input.stop_button, "stop button");
 
   std::puts("external MIDI sync simulation");
   app.load_project(restored_project);
   ui.reset();
+  scanner.reset();
+  input = {};
   app.set_clock_source(dixpas::ClockSource::ExternalMidi);
   render_frame();
   app.receive_midi_byte(0xFAU);

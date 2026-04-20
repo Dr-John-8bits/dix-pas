@@ -25,6 +25,7 @@ Modules actuellement posés :
 - `GateOutputEngine`
 - `StorageEngine`
 - `UiController`
+- `UiScanner`
 - `DisplayEngine`
 
 Capacités déjà implémentées :
@@ -45,6 +46,7 @@ Capacités déjà implémentées :
 - état runtime des deux `Gate Out`
 - sauvegarde / chargement de presets via slots fixes + `CRC16`
 - logique UI pour sélection de pas, rangée 3, encodeur, global edit
+- scanner d'entrées hardware-agnostique avec debounce, appui court / long et encodeur quadrature
 - chargement d'un preset via `encoder button` sur `Preset`
 - sauvegarde explicite via `SHIFT + encoder button` sur `Preset`
 - rendu d'un écran texte simulant l'OLED
