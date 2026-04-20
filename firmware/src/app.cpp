@@ -7,8 +7,13 @@ App::App() {
 }
 
 void App::load_project(const ProjectState& project) {
+  apply_project(project, true);
+}
+
+void App::apply_project(const ProjectState& project, bool reset_playhead) {
   clock_.set_tempo_bpm_x10(project.tempo_bpm_x10);
-  sequencer_.load_project(project);
+  sequencer_.apply_project(project, reset_playhead);
+  process_pending_engine_events();
 }
 
 void App::set_clock_source(ClockSource source) {
@@ -75,6 +80,11 @@ void App::stop() {
   if (clock_.clock_source() == ClockSource::Internal) {
     midi_.send_stop();
   }
+  process_pending_engine_events();
+}
+
+void App::reset_playhead() {
+  sequencer_.reset_playhead();
   process_pending_engine_events();
 }
 

@@ -17,6 +17,7 @@ class App {
   App();
 
   void load_project(const ProjectState& project);
+  void apply_project(const ProjectState& project, bool reset_playhead);
   [[nodiscard]] const ProjectState& project() const { return sequencer_.project(); }
 
   void seed_demo_project();
@@ -27,12 +28,20 @@ class App {
   void start();
   void resume();
   void stop();
+  void reset_playhead();
   void tick_internal();
   void receive_midi_byte(uint8_t byte);
 
   bool pop_midi_byte(uint8_t& byte) { return midi_.pop_byte(byte); }
   bool pop_routed_event(EngineEvent& event) { return monitor_queue_.pop(event); }
   [[nodiscard]] bool gate_state(TrackId track) const { return gates_.gate_state(track); }
+  [[nodiscard]] bool has_playhead_step(TrackId track) const {
+    return sequencer_.has_playhead_step(track);
+  }
+  [[nodiscard]] uint8_t playhead_step(TrackId track) const {
+    return sequencer_.playhead_step(track);
+  }
+  [[nodiscard]] uint32_t current_tick() const { return sequencer_.current_tick(); }
 
   [[nodiscard]] ClockEngine& clock() { return clock_; }
   [[nodiscard]] const ClockEngine& clock() const { return clock_; }

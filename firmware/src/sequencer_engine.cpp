@@ -44,7 +44,19 @@ uint8_t clamp_note(int16_t value) {
 SequencerEngine::SequencerEngine() = default;
 
 void SequencerEngine::load_project(const ProjectState& project) {
+  apply_project(project, true);
+}
+
+void SequencerEngine::apply_project(const ProjectState& project, bool reset_playhead_requested) {
   project_ = project;
+  sanitize_project();
+
+  if (reset_playhead_requested) {
+    reset_playhead();
+  }
+}
+
+void SequencerEngine::sanitize_project() {
   project_.track_a.length = clamp_track_length(project_.track_a.length);
   project_.track_b.length = clamp_track_length(project_.track_b.length);
   project_.track_a.midi_channel = clamp_midi_channel(project_.track_a.midi_channel);
@@ -61,8 +73,6 @@ void SequencerEngine::load_project(const ProjectState& project) {
     step.ratchet = clamp_ratchet(step.ratchet);
     step.gate = clamp_gate_percent(step.gate);
   }
-
-  reset_runtime_state();
 }
 
 void SequencerEngine::set_random_seed(uint32_t seed) {
@@ -90,6 +100,16 @@ void SequencerEngine::stop() {
   transport_state_ = TransportState::Stopped;
 }
 
+void SequencerEngine::reset_playhead() {
+  force_all_notes_and_gates_off();
+  current_tick_ = 0U;
+  reset_runtime_state();
+
+  if (transport_state_ == TransportState::Playing) {
+    process_step_boundary(current_tick_);
+  }
+}
+
 void SequencerEngine::tick() {
   if (transport_state_ != TransportState::Playing) {
     return;
@@ -105,6 +125,18 @@ void SequencerEngine::tick() {
 
 bool SequencerEngine::pop_event(EngineEvent& event) {
   return output_queue_.pop(event);
+}
+
+bool SequencerEngine::has_playhead_step(TrackId track_id) const {
+  const RuntimeTrackState& runtime =
+      track_id == TrackId::A ? track_a_runtime_ : track_b_runtime_;
+  return runtime.playhead_valid;
+}
+
+uint8_t SequencerEngine::playhead_step(TrackId track_id) const {
+  const RuntimeTrackState& runtime =
+      track_id == TrackId::A ? track_a_runtime_ : track_b_runtime_;
+  return runtime.playhead_step;
 }
 
 void SequencerEngine::reset_runtime_state() {
@@ -164,6 +196,10 @@ void SequencerEngine::process_chain_step(uint32_t tick) {
 void SequencerEngine::process_track_step(TrackId track_id, const Track& track,
                                          uint8_t step_index, uint32_t tick,
                                          uint8_t midi_channel_override) {
+  RuntimeTrackState& runtime = runtime_for_track(track_id);
+  runtime.playhead_step = step_index;
+  runtime.playhead_valid = true;
+
   const Step& step = track.steps[step_index];
   if (!step.active || !passes_probability(step.probability)) {
     return;

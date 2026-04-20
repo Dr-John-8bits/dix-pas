@@ -13,6 +13,7 @@ class SequencerEngine {
   SequencerEngine();
 
   void load_project(const ProjectState& project);
+  void apply_project(const ProjectState& project, bool reset_playhead);
   [[nodiscard]] const ProjectState& project() const { return project_; }
 
   void set_random_seed(uint32_t seed);
@@ -20,10 +21,13 @@ class SequencerEngine {
   void start();
   void resume();
   void stop();
+  void reset_playhead();
   void tick();
 
   [[nodiscard]] TransportState transport_state() const { return transport_state_; }
   [[nodiscard]] uint32_t current_tick() const { return current_tick_; }
+  [[nodiscard]] bool has_playhead_step(TrackId track_id) const;
+  [[nodiscard]] uint8_t playhead_step(TrackId track_id) const;
 
   bool pop_event(EngineEvent& event);
 
@@ -38,6 +42,8 @@ class SequencerEngine {
     uint8_t active_note = 0;
     uint8_t active_channel = 1;
     bool gate_high = false;
+    bool playhead_valid = false;
+    uint8_t playhead_step = 0;
   };
 
   struct ScheduledEvent {
@@ -59,6 +65,7 @@ class SequencerEngine {
   ScheduledEvent scheduled_events_[kScheduledEventCapacity]{};
 
   void reset_runtime_state();
+  void sanitize_project();
   void process_step_boundary(uint32_t tick);
   void process_dual_step(uint32_t tick);
   void process_chain_step(uint32_t tick);
