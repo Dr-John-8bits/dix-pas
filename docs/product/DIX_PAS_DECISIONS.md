@@ -1,8 +1,8 @@
-# DIX PAS - Decisions figees
+# DIX PAS - Décisions figées
 
 ## 1. Objet
 
-Ce document liste les decisions deja prises pour eviter de rouvrir les memes discussions pendant le lancement du projet.
+Ce document liste les décisions déjà prises pour éviter de rouvrir les mêmes discussions pendant le lancement du projet.
 
 Date de consolidation :
 
@@ -12,43 +12,43 @@ Date de consolidation :
 
 ## DEC-001 - Architecture musicale
 
-Decision :
+Décision :
 
 - la machine sera un **2 x 10 pas** avec un mode **Chain 20**
 
 Raison :
 
-- identite forte
+- identité forte
 - format compact
 - plus de valeur qu'un simple 10 pas
 
 Impact :
 
-- deux pistes logiques des la V1
+- deux pistes logiques dès la V1
 
 ---
 
 ## DEC-002 - Interface prioritaire
 
-Decision :
+Décision :
 
-- priorite d'edition = `Probabilite > On/Off > Ratchet`
+- priorité d'édition = `Probabilite > On/Off > Ratchet`
 
 Raison :
 
-- c'est la logique de jeu la plus pertinente pour l'usage performance defini
+- c'est la logique de jeu la plus pertinente pour l'usage performance défini
 
 Impact :
 
-- la troisieme rangee est pensee d'abord pour la probabilite
+- la troisième rangée est pensée d'abord pour la probabilité
 
 ---
 
 ## DEC-003 - Ratchet V1
 
-Decision :
+Décision :
 
-- le ratchet V1 est limite a `x1, x2, x3`
+- le ratchet V1 est limité à `x1, x2, x3`
 
 Raison :
 
@@ -63,14 +63,14 @@ Impact :
 
 ## DEC-004 - Interface MIDI live
 
-Decision :
+Décision :
 
 - l'interface musicale principale est le **MIDI DIN 5 broches**
 
 Raison :
 
 - instrument hardware autonome
-- pas de dependance a l'USB dans le flux live
+- pas de dépendance à l'USB dans le flux live
 
 Impact :
 
@@ -81,59 +81,59 @@ Impact :
 
 ## DEC-005 - USB
 
-Decision :
+Décision :
 
 - l'USB n'est pas l'interface musicale principale
 
 Raison :
 
-- separation claire entre developpement et usage live
+- séparation claire entre développement et usage live
 
 Impact :
 
-- l'USB ne sert qu'au flash, debug ou service si la carte en possede un
+- l'USB ne sert qu'au flash, debug ou service si la carte en possède un
 
 ---
 
 ## DEC-006 - Gate outputs
 
-Decision :
+Décision :
 
 - la V1 inclut `Gate Out A` et `Gate Out B`
 
 Raison :
 
-- ouvre le projet au hardware analogique sans devoir integrer du CV pitch
+- ouvre le projet au hardware analogique sans devoir intégrer du CV pitch
 
 Impact :
 
-- 2 sorties numeriques 5 V
-- sorties bufferisees
-- connectique recommandee en jack mono 3.5 mm
+- 2 sorties numériques 5 V
+- sorties bufferisées
+- connectique recommandée en jack mono 3.5 mm
 
 ---
 
 ## DEC-007 - Comportement Gate
 
-Decision :
+Décision :
 
 - en mode Dual, Gate A suit la piste A et Gate B suit la piste B
-- en mode Chain 20, Gate A reste sur les pas 1 a 10 et Gate B sur les pas 11 a 20
+- en mode Chain 20, Gate A reste sur les pas 1 à 10 et Gate B sur les pas 11 à 20
 
 Raison :
 
-- comportement previsible
-- conservation de l'identite deux rangees / deux pistes
+- comportement prévisible
+- conservation de l'identité deux rangées / deux pistes
 
 Impact :
 
-- pas de reinterpretation automatique exotique des gates en mode Chain 20
+- pas de réinterprétation automatique exotique des gates en mode Chain 20
 
 ---
 
 ## DEC-008 - MCU V1
 
-Decision :
+Décision :
 
 - la carte retenue pour la V1 est l'**Arduino Nano Every**
 
@@ -143,7 +143,7 @@ Raison :
 - simple pour MIDI DIN
 - simple pour Gate Out
 - assez de marge pour la V1
-- compatible avec la V2 generative visee aujourd'hui
+- compatible avec la V2 générative visée aujourd'hui
 
 Impact :
 
@@ -151,27 +151,27 @@ Impact :
 
 ---
 
-## DEC-009 - Ecran
+## DEC-009 - Écran
 
-Decision :
+Décision :
 
-- l'ecran retenu est un **OLED I2C 128x64**
+- l'écran retenu est un **OLED I2C 128x64**
 
 Raison :
 
 - assez lisible
-- simple a integrer
+- simple à intégrer
 - suffisant pour le feedback contextuel de la V1
 
 Impact :
 
-- pas d'ecran plus lourd en V1
+- pas d'écran plus lourd en V1
 
 ---
 
 ## DEC-010 - Presets
 
-Decision :
+Décision :
 
 - la V1 vise **8 presets minimum**
 - la sauvegarde est **explicite**
@@ -179,41 +179,41 @@ Decision :
 
 Raison :
 
-- fiabilite
-- simplicite logicielle
+- fiabilité
+- simplicité logicielle
 - bonne marge pour la suite
 
 Impact :
 
-- ajout d'une memoire externe des la conception
+- ajout d'une mémoire externe dès la conception
 
 ---
 
 ## DEC-011 - LEDs V1
 
-Decision :
+Décision :
 
-- pas de LED sur la troisieme rangee si cela ralentit le projet
+- pas de LED sur la troisième rangée si cela ralentit le projet
 
 Raison :
 
-- il faut proteger la velocite d'execution de la V1
+- il faut protéger la vélocité d'exécution de la V1
 
 Impact :
 
-- priorite aux LEDs des deux rangees principales et aux LEDs systeme
+- priorité aux LEDs des deux rangées principales et aux LEDs système
 
 ---
 
 ## DEC-012 - Scope V1
 
-Decision :
+Décision :
 
-- Euclidean et modes generatifs sont reportes apres la V1 de base
+- Euclidean et modes génératifs sont reportés après la V1 de base
 
 Raison :
 
-- la V1 doit etre realisable vite
+- la V1 doit être réalisable vite
 - ces fonctions ne doivent pas retarder le premier instrument jouable
 
 Impact :
@@ -223,15 +223,15 @@ Impact :
 
 ---
 
-## DEC-013 - Compatibilite V2
+## DEC-013 - Compatibilité V2
 
-Decision :
+Décision :
 
-- le hardware retenu est considere compatible avec la V2 visee aujourd'hui
+- le hardware retenu est considéré compatible avec la V2 visée aujourd'hui
 
 Raison :
 
-- les fonctions Euclidean et generatives simples ne demandent pas un MCU plus gros a ce stade
+- les fonctions Euclidean et génératives simples ne demandent pas un MCU plus gros à ce stade
 
 Impact :
 
@@ -239,31 +239,31 @@ Impact :
 
 ---
 
-## DEC-014 - Strategie de licence
+## DEC-014 - Stratégie de licence
 
-Decision :
+Décision :
 
 - code, firmware, scripts et outillage sous `0BSD`
 - documentation, hardware et assets sous `CC0 1.0`
 
 Raison :
 
-- correspond a l'intention "grand ouvert"
+- correspond à l'intention "grand ouvert"
 - pas d'obligation d'attribution
-- reutilisation commerciale libre
+- réutilisation commerciale libre
 
 Impact :
 
 - `LICENSE` racine en `0BSD`
 - `LICENSE-CC0.txt` pour la documentation, le hardware et les assets
-- `LICENSING.md` sert de table de repartition
+- `LICENSING.md` sert de table de répartition
 
 ---
 
-## 2. Regle de changement
+## 2. Règle de changement
 
-Une decision de cette liste ne doit etre rouverte que si :
+Une decision de cette liste ne doit être rouverte que si :
 
-- un blocage reel apparait
+- un blocage réel apparaît
 - une contrainte hardware ou firmware nouvelle le justifie
-- ou un benefice net et important est demontre
+- ou un bénéfice net et important est démontré

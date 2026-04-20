@@ -2,13 +2,13 @@
 
 Note documentaire :
 
-- ce document propose un mapping initial de broches pour lancer le dev et le schema
+- ce document propose un mapping initial de broches pour lancer le dev et le schéma
 - ce mapping est un brouillon de travail
 - en cas de conflit de scope, `docs/product/DIX_PAS_SOURCE_DE_VERITE.md` l'emporte
 
 ## 1. Objet
 
-Ce document fige un premier mapping des broches pour l'architecture cible :
+Ce document figé un premier mapping des broches pour l'architecture cible :
 
 - Arduino Nano Every
 - MIDI DIN IN / OUT
@@ -17,7 +17,7 @@ Ce document fige un premier mapping des broches pour l'architecture cible :
 - encodeur
 - chaines 74HC165 / 74HC595
 
-Le but est d'eviter de perdre du temps plus tard a re-decider les memes affectations.
+Le but est d'éviter de perdre du temps plus tard a re-decider les mêmes affectations.
 
 ---
 
@@ -27,7 +27,7 @@ Principes retenus :
 
 - reserver `D0 / D1` au MIDI DIN
 - reserver `A4 / A5` au bus I2C
-- reserver `D11 / D12 / D13` a la chaine serie UI
+- reserver `D11 / D12 / D13` a la chaine série UI
 - garder les Gates sur des GPIO simples
 - garder quelques broches libres pour debug ou ajustements
 
@@ -37,45 +37,45 @@ Principes retenus :
 
 | Fonction | Broche Nano Every | Statut | Remarques |
 | --- | --- | --- | --- |
-| MIDI IN RX | `D0` | reserve | UART MIDI DIN IN |
-| MIDI OUT TX | `D1` | reserve | UART MIDI DIN OUT |
-| Encodeur A | `D2` | reserve | interruption ou polling rapide |
-| Encodeur B | `D3` | reserve | interruption ou polling rapide |
-| Encodeur poussoir | `D4` | reserve | entree directe |
-| Gate Out A | `D5` | reserve | sortie bufferisee |
-| Gate Out B | `D6` | reserve | sortie bufferisee |
-| LED systeme 1 | `D7` | provisoire | libre si non utilisee |
-| LED systeme 2 | `D8` | provisoire | libre si non utilisee |
-| 74HC165 load | `D9` | reserve | `PL` / capture entrees |
-| 74HC595 latch | `D10` | reserve | `RCLK` / latch sorties |
-| 74HC595 data | `D11` | reserve | `SER` / MOSI |
-| 74HC165 data | `D12` | reserve | `QH` / MISO |
-| Clock commun 165/595 | `D13` | reserve | `SCK` commun |
-| Libre / futur 1 | `A0` | libre | debug ou LED systeme |
+| MIDI IN RX | `D0` | réservé | UART MIDI DIN IN |
+| MIDI OUT TX | `D1` | réservé | UART MIDI DIN OUT |
+| Encodeur A | `D2` | réservé | interruption ou polling rapide |
+| Encodeur B | `D3` | réservé | interruption ou polling rapide |
+| Encodeur poussoir | `D4` | réservé | entrée directe |
+| Gate Out A | `D5` | réservé | sortie bufferisée |
+| Gate Out B | `D6` | réservé | sortie bufferisée |
+| LED système 1 | `D7` | provisoire | libre si non utilisée |
+| LED système 2 | `D8` | provisoire | libre si non utilisée |
+| 74HC165 load | `D9` | réservé | `PL` / capture entrées |
+| 74HC595 latch | `D10` | réservé | `RCLK` / latch sorties |
+| 74HC595 data | `D11` | réservé | `SER` / MOSI |
+| 74HC165 data | `D12` | réservé | `QH` / MISO |
+| Clock commun 165/595 | `D13` | réservé | `SCK` commun |
+| Libre / futur 1 | `A0` | libre | debug ou LED système |
 | Libre / futur 2 | `A1` | libre | debug ou service |
-| Libre / futur 3 | `A2` | libre | reserve |
-| Libre / futur 4 | `A3` | libre | reserve |
-| I2C SDA | `A4` | reserve | ecran + FRAM |
-| I2C SCL | `A5` | reserve | ecran + FRAM |
+| Libre / futur 3 | `A2` | libre | réservé |
+| Libre / futur 4 | `A3` | libre | réservé |
+| I2C SDA | `A4` | réservé | écran + FRAM |
+| I2C SCL | `A5` | réservé | écran + FRAM |
 
 ---
 
-## 4. Bus d'entrees
+## 4. Bus d'entrées
 
-Les entrees utilisateur ne sont pas lues directement par le MCU.
+Les entrées utilisateur ne sont pas lues directement par le MCU.
 
-Strategie retenue :
+Stratégie retenue :
 
 - `5 x 74HC165`
 
 Capacite :
 
-- jusqu'a `40` entrees
+- jusqu'a `40` entrées
 
 Entrees cibles :
 
-- 30 boutons des trois rangees
-- 6 boutons systeme
+- 30 boutons des trois rangées
+- 6 boutons système
 - 1 poussoir encodeur si besoin de le remonter dans la chaine plus tard
 
 Le premier jet de firmware peut laisser l'encodeur sur GPIO directs et les autres boutons sur la chaine `74HC165`.
@@ -86,7 +86,7 @@ Le premier jet de firmware peut laisser l'encodeur sur GPIO directs et les autre
 
 Les LEDs ne sont pas pilotees directement par le MCU.
 
-Strategie retenue :
+Stratégie retenue :
 
 - `3 x 74HC595`
 
@@ -98,9 +98,9 @@ Sorties cibles :
 
 - 10 LEDs piste A
 - 10 LEDs piste B
-- 4 LEDs systeme
+- 4 LEDs système
 
-Les LEDs de la troisieme rangee restent hors scope V1 si elles ralentissent le projet.
+Les LEDs de la troisième rangée restent hors scope V1 si elles ralentissent le projet.
 
 ---
 
@@ -119,15 +119,15 @@ Contrainte :
 
 Recommendation :
 
-- buffer type `74HC125` ou etage equivalent
+- buffer type `74HC125` ou étage équivalent
 
 ---
 
 ## 7. I2C
 
-Le bus I2C relie :
+Le bus I2C relié :
 
-- l'ecran OLED
+- l'écran OLED
 - la FRAM externe
 
 Broches retenues :
@@ -137,7 +137,7 @@ Broches retenues :
 
 Remarque :
 
-- si plusieurs modules I2C sont utilises, il faudra verifier les adresses et la qualite du bus
+- si plusieurs modules I2C sont utilisés, il faudra verifier les adresses et la qualite du bus
 
 ---
 
@@ -154,7 +154,7 @@ Les broches suivantes sont volontairement laissees libres ou peu engagees :
 
 Usages possibles plus tard :
 
-- LEDs systeme supplementaires
+- LEDs système supplementaires
 - debug
 - instrumentation
 - extension future non critique
@@ -163,19 +163,19 @@ Usages possibles plus tard :
 
 ## 9. Points a verrouiller plus tard
 
-Ce document ne fige pas encore :
+Ce document ne figé pas encore :
 
-- le schema exact du buffer MIDI OUT
-- le schema exact du MIDI IN
+- le schéma exact du buffer MIDI OUT
+- le schéma exact du MIDI IN
 - la topologie exacte des Gate Out
-- la presence finale des LEDs systeme directes
+- la presence finale des LEDs système directes
 
 ---
 
 ## 10. Recommandation de mise en oeuvre
 
-Au moment du schema :
+Au moment du schéma :
 
 1. garder ce mapping autant que possible
-2. ne changer une broche que s'il y a une contrainte physique ou electrique reelle
-3. si une broche change, mettre a jour ce document tout de suite
+2. ne changer une broche que s'il y a une contrainte physique ou electrique réelle
+3. si une broche change, mettre à jour ce document tout de suite

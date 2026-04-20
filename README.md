@@ -1,6 +1,6 @@
 # DIX PAS
 
-**DIX PAS** est un step sequencer MIDI de performance open source, pense comme un vrai instrument hardware.
+**DIX PAS** est un step sequencer MIDI de performance open source, pensé comme un vrai instrument hardware.
 
 Direction actuelle :
 
@@ -8,7 +8,7 @@ Direction actuelle :
 - mode `Chain 20`
 - `MIDI DIN 5 broches`
 - `2 Gate Out`
-- ecran `OLED I2C 128x64`
+- écran `OLED I2C 128x64`
 - `Arduino Nano Every`
 
 ## Arborescence
@@ -42,7 +42,7 @@ Direction actuelle :
 
 ## Documentation
 
-Point d'entree recommande :
+Point d'entrée recommandé :
 
 1. [docs/product/DIX_PAS_SOURCE_DE_VERITE.md](docs/product/DIX_PAS_SOURCE_DE_VERITE.md)
 2. [docs/product/DIX_PAS_DECISIONS.md](docs/product/DIX_PAS_DECISIONS.md)
@@ -61,38 +61,38 @@ Documents annexes :
 - [notes/idee.txt](notes/idee.txt)
 - [docs/README.md](docs/README.md)
 
-Regle simple :
+Règle simple :
 
 - le `SOURCE_DE_VERITE` tranche
-- le `DOCUMENT_TECHNIQUE` explique comment realiser
-- les `TESTS_ACCEPTATION_V1` disent quand la V1 est validee
+- le `DOCUMENT_TECHNIQUE` explique comment réaliser
+- les `TESTS_ACCEPTATION_V1` disent quand la V1 est validée
 
 ## Sans hardware
 
-On peut avancer serieusement sans acheter l'Arduino tout de suite.
+On peut avancer sérieusement sans acheter l'Arduino tout de suite.
 
 On peut d'abord construire :
 
 - la documentation
-- le coeur logique du sequenceur
+- le cœur logique du séquenceur
 - les presets
 - les tests desktop
 - les tests MIDI logiques sur Mac
 
 ## Licences
 
-Le projet est publie en mode tres ouvert, sans obligation de credit.
+Le projet est publié en mode très ouvert, sans obligation de crédit.
 
 - code, firmware, scripts et outillage : `0BSD` dans [LICENSE](LICENSE)
 - documentation, BOM, hardware, images et assets : `CC0 1.0` dans [LICENSE-CC0.txt](LICENSE-CC0.txt)
 
-Le detail est documente dans [LICENSING.md](LICENSING.md).
+Le détail est documenté dans [LICENSING.md](LICENSING.md).
 
-## Demarrage rapide
+## Démarrage rapide
 
 1. lire [docs/product/DIX_PAS_SOURCE_DE_VERITE.md](docs/product/DIX_PAS_SOURCE_DE_VERITE.md)
 2. lire [docs/setup/DIX_PAS_SETUP_MAC.md](docs/setup/DIX_PAS_SETUP_MAC.md)
-3. valider le hardware critique a acheter
-4. implementer le coeur de sequence dans `firmware/`
-5. integrer `MIDI OUT`, `Gate Out` et UI
+3. valider le hardware critique à acheter
+4. implémenter le cœur de séquence dans `firmware/`
+5. intégrer `MIDI OUT`, `Gate Out` et UI
 6. passer la checklist de [docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md](docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md)

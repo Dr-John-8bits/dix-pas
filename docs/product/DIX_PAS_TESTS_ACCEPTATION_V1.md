@@ -10,30 +10,30 @@ Le but est de verifier que l'instrument est :
 
 - stable
 - jouable
-- coherent avec la vision produit
+- cohérent avec la vision produit
 
 ---
 
 ## 2. Conditions de test
 
-Base de test recommandee :
+Base de test recommandée :
 
 - alimentation nominale stable
-- ecran branche
+- écran branche
 - boutons et encodeur branches
 - MIDI DIN IN et OUT branches sur un setup de test
 - Gate Out A et Gate Out B branches sur deux cibles de test visibles
 
 ---
 
-## 3. Tests de demarrage
+## 3. Tests de démarrage
 
 ### T-001 - Boot propre
 
 Critere :
 
 - la machine demarre sans freeze
-- l'ecran affiche un etat principal coherent
+- l'écran affiche un état principal cohérent
 
 ### T-002 - Etat initial sain
 
@@ -48,24 +48,24 @@ Critere :
 
 - l'encodeur reagit
 - les boutons reagissent
-- aucun comportement erratique immediat
+- aucun comportement erratique immédiat
 
 ---
 
-## 4. Tests de sequence
+## 4. Tests de séquence
 
 ### T-010 - Lecture simple piste A
 
 Critere :
 
-- une sequence simple sur piste A joue correctement
+- une séquence simple sur piste A joue correctement
 - la position de lecture est visible
 
 ### T-011 - Lecture simple piste B
 
 Critere :
 
-- une sequence simple sur piste B joue correctement
+- une séquence simple sur piste B joue correctement
 
 ### T-012 - Mode Dual
 
@@ -85,7 +85,7 @@ Critere :
 
 Critere :
 
-- une piste peut etre raccourcie
+- une piste peut être raccourcie
 - la lecture respecte la longueur definie
 
 ### T-015 - Modes de lecture
@@ -96,26 +96,26 @@ Critere :
 
 ---
 
-## 5. Tests d'edition
+## 5. Tests d'édition
 
 ### T-020 - Selection de pas
 
 Critere :
 
-- un pas peut etre selectionne clairement sur chaque piste
+- un pas peut être selectionne clairement sur chaque piste
 
 ### T-021 - Probabilite
 
 Critere :
 
-- la troisieme rangee permet d'editer la probabilite
+- la troisième rangée permet d'editer la probabilité
 - le comportement musical change effectivement
 
 ### T-022 - On / Off
 
 Critere :
 
-- un pas peut etre active ou desactive
+- un pas peut être active ou desactive
 - un pas inactif ne joue pas
 
 ### T-023 - Ratchet
@@ -129,8 +129,8 @@ Critere :
 
 Critere :
 
-- la valeur de gate d'un pas peut etre modifiee
-- la duree entendue ou observee change reellement
+- la valeur de gate d'un pas peut être modifiee
+- la duree entendue ou observee change réellement
 
 ### T-025 - Velocity
 
@@ -140,25 +140,25 @@ Critere :
 
 ---
 
-## 6. Tests ecran
+## 6. Tests écran
 
 ### T-030 - Feedback encodeur
 
 Critere :
 
-- a chaque rotation de l'encodeur, l'ecran montre le parametre et la valeur edites
+- a chaque rotation de l'encodeur, l'écran montre le parametre et la valeur éditées
 
 ### T-031 - Feedback changement de mode
 
 Critere :
 
-- l'ecran reflete le mode d'edition actif
+- l'écran reflète le mode d'édition actif
 
 ### T-032 - Retour automatique
 
 Critere :
 
-- apres inactivite, l'ecran revient a la vue principale
+- après inactivité, l'écran revient a la vue principale
 
 ### T-033 - Vue principale
 
@@ -186,7 +186,7 @@ Critere :
 
 Critere :
 
-- la sequence chainee utilise bien un seul canal
+- la séquence chainee utilisé bien un seul canal
 
 ### T-043 - Clock interne
 
@@ -228,21 +228,21 @@ Critere :
 
 Critere :
 
-- Gate A reste lie aux pas 1 a 10
-- Gate B reste lie aux pas 11 a 20
+- Gate A reste lié aux pas 1 a 10
+- Gate B reste lié aux pas 11 a 20
 
 ### T-053 - Niveau logique Gate
 
 Critere :
 
 - les sorties Gate atteignent le niveau logique attendu
-- les sorties retombent bien a l'etat bas
+- les sorties retombent bien a l'état bas
 
 ### T-054 - Stop / Reset Gate
 
 Critere :
 
-- les deux sorties Gate retombent a l'etat bas sur stop et reset
+- les deux sorties Gate retombent a l'état bas sur stop et reset
 
 ---
 
@@ -252,28 +252,28 @@ Critere :
 
 Critere :
 
-- un preset peut etre sauvegarde sans erreur
+- un preset peut être sauvegarde sans erreur
 
 ### T-061 - Rappel preset
 
 Critere :
 
-- un preset rappelle correctement sequence, tempo, canaux et etat machine
+- un preset rappelle correctement séquence, tempo, canaux et état machine
 
 ### T-062 - Persistance
 
 Critere :
 
-- apres extinction puis rallumage, les presets sauvegardes sont toujours presents
+- après extinction puis rallumage, les presets sauvegardes sont toujours presents
 
 ---
 
 ## 10. Definition de validation
 
-La V1 est validee si :
+La V1 est validée si :
 
 - tous les tests critiques de `T-001` a `T-054` passent
 - les presets fonctionnent au minimum sur sauvegarde / rappel / persistance
 - la machine est jouable sans bug bloquant evident
 
-Les fonctions Euclidean et generatives ne sont pas necessaires pour declarer la V1 validee.
+Les fonctions Euclidean et génératives ne sont pas necessaires pour declarer la V1 validée.

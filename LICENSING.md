@@ -2,9 +2,9 @@
 
 ## Intention
 
-Le projet est publie de la maniere la plus ouverte possible :
+Le projet est publié de la maniere la plus ouverte possible :
 
-- reutilisation libre
+- réutilisation libre
 - modification libre
 - redistribution libre
 - usage commercial libre
@@ -18,7 +18,7 @@ Licence :
 
 - `0BSD`
 
-Fichier de reference :
+Fichier de référence :
 
 - `LICENSE`
 
@@ -36,7 +36,7 @@ Licence :
 
 - `CC0 1.0 Universal`
 
-Fichier de reference :
+Fichier de référence :
 
 - `LICENSE-CC0.txt`
 
@@ -44,30 +44,30 @@ Cela couvre notamment :
 
 - documentation Markdown
 - BOM
-- schemas electroniques
+- schémas électroniques
 - PCB
-- fichiers CAD mecanique
+- fichiers CAD mécanique
 - illustrations
 - images
 - logo du projet
 
-## Regle par defaut
+## Regle par défaut
 
-Par defaut :
+Par défaut :
 
 - les fichiers de code source et d'outillage sont sous `0BSD`
 - les autres fichiers crees pour le projet sont sous `CC0 1.0`
 
-Si un fichier futur doit suivre une autre licence, cela devra etre indique explicitement dans le fichier lui-meme ou dans sa documentation associee.
+Si un fichier futur doit suivre une autre licence, cela devra être indique explicitement dans le fichier lui-meme ou dans sa documentation associee.
 
 ## Consequences pratiques
 
-Le projet est pense pour etre :
+Le projet est pensé pour être :
 
 - forkable librement
-- reutilisable dans un produit commercial
+- réutilisable dans un produit commercial
 - modifiable sans obligation de republication
-- reutilisable sans obligation de credit
+- réutilisable sans obligation de crédit
 
 ## Note importante
 
@@ -75,8 +75,8 @@ Cette strategie correspond a l'intention "grand ouvert".
 
 Point juridique utile :
 
-- `CC0` vise une renonciation maximale aux droits, avec mecanisme de secours si une renonciation complete n'est pas reconnue localement
-- `0BSD` est une licence open source tres permissive sans obligation d'attribution
+- `CC0` vise une renonciation maximale aux droits, avec mecanisme de secours si une renonciation complète n'est pas reconnue localement
+- `0BSD` est une licence open source très permissive sans obligation d'attribution
 - ni `CC0` ni `0BSD` n'ajoutent de garantie
 
 Pour la publication GitHub, le `LICENSE` racine reste volontairement en `0BSD`, et la repartition exacte est decrite ici.

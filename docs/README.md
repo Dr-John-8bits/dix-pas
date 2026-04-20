@@ -2,11 +2,11 @@
 
 La documentation est organisee par usage :
 
-- `product/` : vision produit, decisions, specs, acceptance
+- `product/` : vision produit, décisions, specs, acceptance
 - `engineering/` : architecture technique, UI, presets, pin map
 - `setup/` : environnement de travail macOS
 
-Ordre de lecture recommande :
+Ordre de lecture recommandé :
 
 1. `product/DIX_PAS_SOURCE_DE_VERITE.md`
 2. `product/DIX_PAS_DECISIONS.md`

@@ -2,7 +2,7 @@
 
 Note documentaire :
 
-- ce document decrit l'environnement recommande pour travailler sur macOS
+- ce document décrit l'environnement recommandé pour travailler sur macOS
 - en cas de conflit de scope produit, `docs/product/DIX_PAS_SOURCE_DE_VERITE.md` l'emporte
 
 ## 1. Objet
@@ -13,13 +13,13 @@ Ce document explique comment preparer un Mac pour :
 - developper le firmware
 - tester une grande partie de la logique sans hardware
 
-Le but est d'avancer fort sur le projet avant achat du materiel.
+Le but est d'avancer fort sur le projet avant achat du matériel.
 
 ---
 
 ## 2. Reponse courte
 
-Non, il n'est pas necessaire d'acheter l'Arduino tout de suite pour commencer serieusement.
+Non, il n'est pas nécessaire d'acheter l'Arduino tout de suite pour commencer sérieusement.
 
 On peut avancer sans hardware sur :
 
@@ -27,13 +27,13 @@ On peut avancer sans hardware sur :
 - les presets
 - les modes machine
 - le moteur MIDI logique
-- plus tard, Euclidean et generatif
+- plus tard, Euclidean et génératif
 
-Le hardware sera necessaire plus tard pour :
+Le hardware sera nécessaire plus tard pour :
 
 - le vrai MIDI DIN electrique
-- les Gate Out reels
-- l'ecran OLED reel
+- les Gate Out réels
+- l'écran OLED réel
 - les boutons, LEDs et encodeur
 - l'upload et la validation sur la carte cible
 
@@ -63,9 +63,9 @@ Il n'est pas obligatoire si on travaille avec PlatformIO.
 
 ---
 
-## 4. Outil principal recommande
+## 4. Outil principal recommandé
 
-L'outil principal recommande est :
+L'outil principal recommandé est :
 
 - **PlatformIO dans VS Code**
 
@@ -78,13 +78,13 @@ Pourquoi :
 
 Important :
 
-- si on utilise PlatformIO IDE dans VS Code, il n'est pas necessaire d'installer PlatformIO Core separement
+- si on utilisé PlatformIO IDE dans VS Code, il n'est pas nécessaire d'installer PlatformIO Core séparément
 
 ---
 
-## 5. Strategie de developpement recommandee
+## 5. Stratégie de développement recommandée
 
-Le projet devrait etre structure pour supporter deux environnements :
+Le projet devrait être structure pour supporter deux environnements :
 
 - un environnement **desktop / native**
 - un environnement **Nano Every**
@@ -93,19 +93,19 @@ Le projet devrait etre structure pour supporter deux environnements :
 
 L'environnement `native` sert a :
 
-- compiler le coeur logique sur le Mac
+- compiler le cœur logique sur le Mac
 - lancer des tests rapides
 - valider les presets
-- valider le moteur de sequence
+- valider le moteur de séquence
 - valider les generateurs futurs
 
 ### 5.2 Environnement Nano Every
 
 L'environnement `nanoevery` sert a :
 
-- compiler le firmware cible reel
+- compiler le firmware cible réel
 - uploader plus tard sur la carte
-- valider l'integration hardware
+- valider l'intégration hardware
 
 ---
 
@@ -113,7 +113,7 @@ L'environnement `nanoevery` sert a :
 
 Sur Mac, on peut tester une partie de la logique MIDI sans Arduino physique.
 
-La voie recommandee est d'utiliser :
+La voie recommandée est d'utiliser :
 
 - **Audio MIDI Setup**
 - le **Driver IAC**
@@ -157,20 +157,20 @@ Ensuite :
 
 ## 8. Ce qu'on peut tester sans hardware
 
-Avant achat du materiel, on peut valider :
+Avant achat du matériel, on peut valider :
 
 - structure des pistes
 - lecture `Dual`
 - lecture `Chain 20`
 - modes de lecture
-- probabilite
+- probabilité
 - ratchet logique
 - gate length logique
 - velocity
 - transport
 - presets
 - structure future Euclidean
-- structure future generative
+- structure future générative
 
 On peut egalement produire :
 
@@ -184,31 +184,31 @@ On peut egalement produire :
 
 Sans carte ni montage, on ne pourra pas valider :
 
-- niveau reel du `MIDI DIN OUT`
+- niveau réel du `MIDI DIN OUT`
 - reception electrique du `MIDI DIN IN`
-- niveau reel de `Gate Out A / B`
+- niveau réel de `Gate Out A / B`
 - comportement electrique des buffers
-- bruit mecanique de l'encodeur
-- debounce reel
-- visibilite reelle de l'ecran
+- bruit mécanique de l'encodeur
+- debounce réel
+- visibilité réelle de l'écran
 - lisibilite du panneau final
 
 ---
 
-## 10. Workflow recommande
+## 10. Workflow recommandé
 
-Ordre recommande :
+Ordre recommandé :
 
 1. consolider la doc
 2. creer le repo
 3. mettre en place PlatformIO
-4. coder le coeur logique testable sur Mac
+4. coder le cœur logique testable sur Mac
 5. ajouter un simulateur ou test harness
-6. seulement ensuite acheter et integrer le hardware
+6. seulement ensuite acheter et intégrer le hardware
 
 ---
 
-## 11. Structure de code recommande
+## 11. Structure de code recommandé
 
 Pour travailler proprement sans hardware au debut :
 
@@ -221,13 +221,13 @@ La logique pure ne doit pas dependre directement :
 - des pins Arduino
 - de `digitalWrite`
 - de `Serial`
-- de l'ecran reel
+- de l'écran réel
 
 Elle doit plutot consommer des interfaces abstraites.
 
 ---
 
-## 12. Installation minimale recommandee
+## 12. Installation minimale recommandée
 
 Checklist simple :
 
@@ -241,7 +241,7 @@ Checklist simple :
 
 ## 13. References officielles utiles
 
-- [PlatformIO IDE for VSCode](https://docs.platformio.org/en/latest/integration/ide/vscode.html)
+- [PlatformIO IDE for VSCode](https://docs.platformio.org/en/latest/intégration/ide/vscode.html)
 - [PlatformIO installation](https://docs.platformio.org/en/latest/core/installation/index.html)
 - [Arduino CLI](https://docs.arduino.cc/arduino-cli/)
 - [Arduino CLI getting started](https://docs.arduino.cc/arduino-cli/getting-started)

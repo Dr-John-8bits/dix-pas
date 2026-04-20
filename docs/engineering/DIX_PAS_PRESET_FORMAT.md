@@ -2,7 +2,7 @@
 
 Note documentaire :
 
-- ce document fige la structure logique des presets et leur stockage recommande
+- ce document figé la structure logique des presets et leur stockage recommandé
 - en cas de conflit de scope produit, `docs/product/DIX_PAS_SOURCE_DE_VERITE.md` l'emporte
 
 ## 1. Objet
@@ -14,21 +14,21 @@ Ce document definit :
 - comment il est stocke
 - comment il evolue dans le temps
 
-Le but est d'eviter une logique de sauvegarde improvis ee au moment du firmware.
+Le but est d'éviter une logique de sauvegarde improvis ee au moment du firmware.
 
 ---
 
 ## 2. Regles produit
 
-Les regles deja retenues sont :
+Les règles déjà retenues sont :
 
 - la V1 supporte `8 presets minimum`
 - la sauvegarde est `explicite`
 - le stockage se fait sur `FRAM externe`
 
-Un preset doit rappeler le contenu musical et les parametres de jeu.
+Un preset doit rappeler le contenu musical et les paramètres de jeu.
 
-Il ne doit pas sauver des etats transitoires non utiles.
+Il ne doit pas sauver des états transitoires non utiles.
 
 ---
 
@@ -62,19 +62,19 @@ Chaque pas contient :
 
 Un preset ne contient pas :
 
-- etat transport `PLAYING / STOPPED`
+- état transport `PLAYING / STOPPED`
 - position de lecture courante
-- etat courant des Gates
-- etat courant des notes tenues
-- etat temporaire de l'UI
-- overlays ecran
-- etat momentane de `SHIFT`
+- état courant des Gates
+- état courant des notes tenues
+- état temporaire de l'UI
+- overlays écran
+- état momentane de `SHIFT`
 
 Ces informations sont runtime, pas preset.
 
 ---
 
-## 5. Modele logique recommande
+## 5. Modele logique recommandé
 
 ```cpp
 struct StepV1 {
@@ -113,11 +113,11 @@ Convention sur `flags` :
 
 ---
 
-## 6. Enveloppe de stockage recommandee
+## 6. Enveloppe de stockage recommandée
 
-Pour rendre le stockage robuste, chaque preset doit etre stocke dans un slot fixe avec un header.
+Pour rendre le stockage robuste, chaque preset doit être stocke dans un slot fixe avec un header.
 
-Format recommande :
+Format recommandé :
 
 ```cpp
 struct PresetSlotHeaderV1 {
@@ -140,20 +140,20 @@ Avantages :
 
 - validation simple
 - detection de donnees corrompues
-- evolution de format plus facile
+- évolution de format plus facile
 
 ---
 
-## 7. Strategie FRAM recommandee
+## 7. Stratégie FRAM recommandée
 
 La FRAM retenue donne largement assez de marge.
 
-Strategie simple recommandee :
+Stratégie simple recommandée :
 
 - reserver un bloc pour metadonnees globales
 - reserver ensuite `8 slots` de taille fixe
 
-Plan d'adressage recommande :
+Plan d'adressage recommandé :
 
 - `0x0000 - 0x00FF` : metadata globale
 - `0x0100 - 0x01FF` : preset 0
@@ -165,19 +165,19 @@ Plan d'adressage recommande :
 - `0x0700 - 0x07FF` : preset 6
 - `0x0800 - 0x08FF` : preset 7
 
-Taille par slot recommandee :
+Taille par slot recommandée :
 
 - `256 bytes`
 
 Pourquoi :
 
 - adressage simple
-- evolution facile
+- évolution facile
 - lecture / ecriture directe
 
 ---
 
-## 8. Metadata globale recommandee
+## 8. Metadata globale recommandée
 
 La metadata globale peut contenir :
 
@@ -199,11 +199,11 @@ struct StorageMetadataV1 {
 };
 ```
 
-Cette zone n'est pas obligatoire pour la V1 minimale, mais elle est recommandee.
+Cette zone n'est pas obligatoire pour la V1 minimale, mais elle est recommandée.
 
 ---
 
-## 9. Comportement de sauvegarde recommande
+## 9. Comportement de sauvegarde recommandé
 
 ### 9.1 Sauvegarde
 
@@ -211,7 +211,7 @@ La sauvegarde est :
 
 - explicite
 
-Flux recommande :
+Flux recommandé :
 
 1. l'utilisateur choisit un slot
 2. la machine construit le payload
@@ -221,7 +221,7 @@ Flux recommande :
 
 ### 9.2 Chargement
 
-Flux recommande :
+Flux recommandé :
 
 1. l'utilisateur choisit un slot
 2. la machine lit le header
@@ -235,7 +235,7 @@ Flux recommande :
 
 Le format doit pouvoir evoluer.
 
-Regles recommandees :
+Regles recommandées :
 
 - commencer a `formatVersion = 1`
 - ne jamais reinterpre ter silencieusement un vieux slot sans verification
@@ -249,7 +249,7 @@ Si un slot d'une ancienne version est charge :
 
 ---
 
-## 11. Valeurs par defaut recommandees
+## 11. Valeurs par défaut recommandées
 
 Si aucun preset valide n'est trouve :
 
@@ -257,7 +257,7 @@ Si aucun preset valide n'est trouve :
 - play mode = `FORWARD`
 - tempo = `120.0 BPM`
 - root = `C`
-- scale = `minor` ou preset projet par defaut
+- scale = `minor` ou preset projet par défaut
 - piste A et B = steps vides ou pattern simple de test
 
 ---
@@ -279,7 +279,7 @@ Le firmware doit fournir :
 
 ---
 
-## 13. Decision pratique
+## 13. Décision pratique
 
 Pour la V1, la bonne decision est :
 

@@ -1,14 +1,14 @@
-# DIX PAS - Source de verite
+# DIX PAS - Source de vérité
 
 ## 1. Statut du document
 
-Ce document est la **reference canonique** du projet.
+Ce document est la **référence canonique** du projet.
 
 En cas de conflit entre plusieurs documents :
 
 - ce document fait foi
 
-Les autres documents servent de details, d'implementation ou de support.
+Les autres documents servent de détails, d'implémentation ou de support.
 
 Date de consolidation :
 
@@ -18,36 +18,36 @@ Date de consolidation :
 
 ## 2. Vision produit
 
-**DIX PAS** est un **step sequencer MIDI oriente performance live**, compact, direct, et pense comme un vrai instrument hardware.
+**DIX PAS** est un **step sequencer MIDI orienté performance live**, compact, direct, et pensé comme un vrai instrument hardware.
 
 Objectif :
 
 - programmer vite
 - jouer sans menu complexe
-- varier en live sans perdre le controle
+- varier en live sans perdre le contrôle
 
-Le projet doit rester open source et documente proprement pour permettre un demarrage rapide du developpement.
+Le projet doit rester open source et documenté proprement pour permettre un démarrage rapide du développement.
 
-## 2.1 Regime d'ouverture
+## 2.1 Régime d'ouverture
 
-Le projet adopte une politique de diffusion tres ouverte.
+Le projet adopte une politique de diffusion très ouverte.
 
 Objectif :
 
-- reutilisation libre
+- réutilisation libre
 - usage commercial libre
 - pas d'obligation d'attribution
 
-Strategie retenue :
+Stratégie retenue :
 
 - code, firmware, scripts et outillage sous `0BSD`
 - documentation, hardware et assets sous `CC0 1.0`
 
-Le detail pratique est documente dans `LICENSING.md`.
+Le détail pratique est documenté dans `LICENSING.md`.
 
 ---
 
-## 3. Scope V1 fige
+## 3. Scope V1 figé
 
 La V1 du projet comprend :
 
@@ -57,17 +57,17 @@ La V1 du projet comprend :
 - **1 MIDI IN**
 - **1 MIDI OUT**
 - **2 Gate Out**
-- **1 ecran OLED I2C 128x64**
+- **1 écran OLED I2C 128x64**
 - **1 encodeur principal avec poussoir**
-- **3 rangees de 10 boutons**
+- **3 rangées de 10 boutons**
 - **presets**
 - **clock interne et externe**
 
-La V1 doit etre realisable rapidement et proprement, idealement dans un premier sprint tres court.
+La V1 doit être réalisable rapidement et proprement, idéalement dans un premier sprint très court.
 
 ---
 
-## 4. Comportement musical fige
+## 4. Comportement musical figé
 
 ### 4.1 Modes machine
 
@@ -86,30 +86,30 @@ En mode **Dual** :
 
 En mode **Chain 20** :
 
-- les deux pistes forment une sequence unique de 20 pas
-- un seul canal MIDI est utilise pour la sequence complete
-- Gate A reste lie aux pas 1 a 10
-- Gate B reste lie aux pas 11 a 20
+- les deux pistes forment une séquence unique de 20 pas
+- un seul canal MIDI est utilisé pour la séquence complète
+- Gate A reste lié aux pas 1 à 10
+- Gate B reste lié aux pas 11 à 20
 
-### 4.2 Parametres par pas
+### 4.2 Paramètres par pas
 
 Chaque pas stocke au minimum :
 
 - active / inactive
-- note ou degre
-- probabilite
+- note ou degré
+- probabilité
 - ratchet
 - gate length
 - velocity
 
-### 4.3 Priorite d'edition
+### 4.3 Priorité d'édition
 
-La priorite d'usage de la machine est :
+La priorité d'usage de la machine est :
 
-1. probabilite
+1. probabilité
 2. on / off
 3. ratchet
-4. le reste a l'encodeur
+4. le reste à l'encodeur
 
 ### 4.4 Ratchet
 
@@ -132,45 +132,45 @@ La V1 doit inclure :
 
 ---
 
-## 5. Interface physique figee
+## 5. Interface physique figée
 
-### 5.1 Rangees
+### 5.1 Rangées
 
 Le panneau comprend :
 
-- rangee 1 = piste A
-- rangee 2 = piste B
-- rangee 3 = controle contextuel
+- rangée 1 = piste A
+- rangée 2 = piste B
+- rangée 3 = contrôle contextuel
 
-### 5.2 Role de la rangee 3
+### 5.2 Rôle de la rangée 3
 
-Par defaut :
+Par défaut :
 
-- probabilite
+- probabilité
 
-Acces secondaire :
+Accès secondaire :
 
 - on / off
 
-Acces via shift :
+Accès via shift :
 
 - ratchet
 
-### 5.3 Ecran
+### 5.3 Écran
 
-L'ecran doit afficher immediatement l'action en cours quand l'utilisateur :
+L'écran doit afficher immédiatement l'action en cours quand l'utilisateur :
 
 - tourne l'encodeur
 - change de mode
-- edite un pas
+- édite un pas
 - change la piste cible
 - change le tempo ou la gamme
 
-Apres inactivite, l'ecran revient automatiquement a une vue principale simple.
+Après inactivité, l'écran revient automatiquement à une vue principale simple.
 
 ---
 
-## 6. Interfaces externes figees
+## 6. Interfaces externes figées
 
 ### 6.1 MIDI
 
@@ -181,9 +181,9 @@ Connectique live officielle :
 
 Le projet n'utilise pas l'USB MIDI comme interface musicale principale.
 
-Si un port USB existe sur la carte de developpement :
+Si un port USB existe sur la carte de développement :
 
-- il est reserve au flash, au debug et au service
+- il est réservé au flash, au debug et au service
 
 ### 6.2 Gate
 
@@ -194,27 +194,27 @@ La V1 fournit :
 
 Contraintes retenues :
 
-- sorties numeriques
+- sorties numériques
 - `5 V`
 - `active high`
-- sorties bufferisees
+- sorties bufferisées
 - pas de CV pitch en V1
 
-Connectique recommande :
+Connectique recommandée :
 
 - `2 x jack mono 3.5 mm`
 
 ---
 
-## 7. Materiel fige
+## 7. Matériel figé
 
 Les choix hardware valides pour la V1 sont :
 
 - **MCU** : Arduino Nano Every
 - **affichage** : OLED I2C 128x64
-- **memoire presets** : FRAM I2C externe
+- **mémoire presets** : FRAM I2C externe
 - **MIDI** : DIN 5 broches
-- **Gate** : 2 sorties 5 V bufferisees
+- **Gate** : 2 sorties 5 V bufferisées
 
 Pourquoi le **Nano Every** est retenu :
 
@@ -222,7 +222,7 @@ Pourquoi le **Nano Every** est retenu :
 - simple pour MIDI DIN
 - simple pour Gate Out
 - assez de marge pour V1
-- assez de marge pour la V2 generative envisagee
+- assez de marge pour la V2 générative envisagée
 
 ---
 
@@ -236,7 +236,7 @@ La sauvegarde retenue est :
 
 - **sauvegarde explicite**
 
-Le stockage utilise :
+Le stockage utilisé :
 
 - **FRAM externe**
 
@@ -250,33 +250,33 @@ La V1 n'inclut pas :
 - USB MIDI live
 - TRS MIDI
 - MIDI THRU obligatoire
-- ecran plus complexe qu'un petit OLED texte / graphique simple
-- LEDs sur la troisieme rangee si cela ralentit le projet
+- écran plus complexe qu'un petit OLED texte / graphique simple
+- LEDs sur la troisième rangée si cela ralentit le projet
 - moteur Euclidean dans le build week-end
-- moteur generatif dans le build week-end
+- moteur génératif dans le build week-end
 
 ---
 
-## 10. Compatibilite V2
+## 10. Compatibilité V2
 
-Le choix materiel retenu est considere comme **compatible avec la V2 visee aujourd'hui**.
+Le choix matériel retenu est considéré comme **compatible avec la V2 visée aujourd'hui**.
 
-La V2 ciblee comprend potentiellement :
+La V2 ciblée comprend potentiellement :
 
 - Euclidean par piste
-- generation melodique selon gamme
-- variantes generatives simples
+- génération mélodique selon gamme
+- variantes génératives simples
 - seed reproductible
-- mutation legere par cycle
+- mutation légère par cycle
 
 Ces fonctions restent compatibles avec :
 
 - 2 pistes de 10 pas
 - Nano Every
-- ecran OLED simple
+- écran OLED simple
 - FRAM externe
 
-Une re-evaluation materielle ne serait necessaire que si le projet grossit nettement au-dela de cette direction.
+Une re-evaluation matérielle ne serait nécessaire que si le projet grossit nettement au-delà de cette direction.
 
 ---
 
@@ -286,47 +286,47 @@ Une re-evaluation materielle ne serait necessaire que si le projet grossit nette
 
 La V1 doit prioriser :
 
-1. moteur de sequence stable
+1. moteur de séquence stable
 2. MIDI DIN
 3. Gate Out A / B
 4. interface live directe
 5. presets
-6. ecran contextuel
+6. écran contextuel
 
 ### 11.2 V1.1 / V2
 
-Les evolutions les plus pertinentes sont :
+Les évolutions les plus pertinentes sont :
 
 - Euclidean
-- generation melodique par gamme
-- variations generatives controlees
+- génération mélodique par gamme
+- variations génératives contrôlées
 
-Ces evolutions sont desirees, mais ne doivent pas ralentir la mise au point de la V1.
+Ces évolutions sont désirées, mais ne doivent pas ralentir la mise au point de la V1.
 
 ---
 
-## 12. Regles de developpement
+## 12. Règles de développement
 
 Pour avancer vite :
 
-- ne pas reouvrir les decisions deja validees sans raison forte
+- ne pas reouvrir les décisions déjà validées sans raison forte
 - garder la V1 compacte
-- privilegier la lisibilite du jeu live
-- ne pas ajouter de complexite d'interface si elle n'apporte pas de benefice scene direct
+- privilégier la lisibilité du jeu live
+- ne pas ajouter de complexité d'interface si elle n'apporte pas de bénéfice scène direct
 
 ---
 
-## 13. Definition de reussite V1
+## 13. Définition de réussite V1
 
-La V1 est consideree reussie si :
+La V1 est considérée réussie si :
 
-- la machine sequence correctement
+- la machine séquence correctement
 - le MIDI DIN est stable
 - les deux Gate Out fonctionnent correctement
 - l'interface est jouable
 - les presets fonctionnent
-- l'ecran donne un feedback immediat
+- l'écran donne un feedback immédiat
 
-Pour la validation detaillee, voir :
+Pour la validation détaillée, voir :
 
 - `docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md`

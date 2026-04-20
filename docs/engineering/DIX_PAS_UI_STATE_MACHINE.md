@@ -2,14 +2,14 @@
 
 Note documentaire :
 
-- ce document fige le comportement de l'interface utilisateur pour accelerer le firmware
+- ce document figé le comportement de l'interface utilisateur pour accelerer le firmware
 - en cas de conflit de scope produit, `docs/product/DIX_PAS_SOURCE_DE_VERITE.md` l'emporte
 
 ## 1. Objet
 
-Ce document decrit les etats et transitions principaux de l'interface.
+Ce document décrit les états et transitions principaux de l'interface.
 
-Le but est d'eviter une UI floue au moment de coder.
+Le but est d'éviter une UI floue au moment de coder.
 
 L'objectif est une machine :
 
@@ -26,13 +26,13 @@ Principes retenus :
 
 - toujours garder une piste ciblee
 - toujours garder un pas selectionne par piste
-- faire de l'ecran un feedback contextuel, pas un menu permanent
-- reduire le nombre de vrais etats UI
+- faire de l'écran un feedback contextuel, pas un menu permanent
+- reduire le nombre de vrais états UI
 - preferer des overlays temporaires a des sous-menus
 
 ---
 
-## 3. Variables d'etat UI
+## 3. Variables d'état UI
 
 Variables minimales a maintenir :
 
@@ -56,13 +56,13 @@ Variables minimales a maintenir :
 
 Description :
 
-- etat de demarrage
+- état de démarrage
 
 Actions :
 
-- initialiser l'etat machine
-- charger les reglages par defaut ou le dernier contexte utile
-- afficher un ecran de boot court
+- initialiser l'état machine
+- charger les reglages par défaut ou le dernier contexte utile
+- afficher un écran de boot court
 
 Transition de sortie :
 
@@ -72,7 +72,7 @@ Transition de sortie :
 
 Description :
 
-- etat normal de la machine
+- état normal de la machine
 - visualisation du contexte courant
 
 Affichage minimal :
@@ -81,28 +81,28 @@ Affichage minimal :
 - tempo ou sync externe
 - piste ciblee
 - pas courant
-- etat transport
+- état transport
 
 Actions possibles :
 
 - selection de pas
-- edition rapide via rangee 3
-- edition via encodeur
+- édition rapide via rangée 3
+- édition via encodeur
 - transport
-- entree en edition globale
+- entrée en édition globale
 
 ### 4.3 STEP_EDIT
 
 Description :
 
 - ce n'est pas une page lourde
-- c'est un etat logique de travail sur un pas
+- c'est un état logique de travail sur un pas
 
 On y est quand :
 
 - un pas est selectionne
 - l'utilisateur tourne l'encodeur
-- l'utilisateur agit sur la rangee 3
+- l'utilisateur agit sur la rangée 3
 
 Affichage :
 
@@ -110,13 +110,13 @@ Affichage :
 
 Sortie :
 
-- retour automatique vers `HOME` apres timeout d'inactivite
+- retour automatique vers `HOME` après timeout d'inactivité
 
 ### 4.4 GLOBAL_EDIT
 
 Description :
 
-- edition des parametres machine ou piste non lies a un bouton de pas direct
+- édition des paramètres machine ou piste non liés a un bouton de pas direct
 
 Contenu cible :
 
@@ -138,11 +138,11 @@ Sortie :
 
 ---
 
-## 5. Comportement des controles
+## 5. Comportement des contrôles
 
 ## 5.1 Rangee 1
 
-Role :
+Rôle :
 
 - selection des pas de la piste A
 
@@ -154,11 +154,11 @@ Effets :
 
 En mode `CHAIN20` :
 
-- la rangee 1 represente les pas `1..10`
+- la rangée 1 represente les pas `1..10`
 
 ## 5.2 Rangee 2
 
-Role :
+Rôle :
 
 - selection des pas de la piste B
 
@@ -170,18 +170,18 @@ Effets :
 
 En mode `CHAIN20` :
 
-- la rangee 2 represente les pas `11..20`
+- la rangée 2 represente les pas `11..20`
 
 ## 5.3 Rangee 3
 
-Role :
+Rôle :
 
-- edition rapide contextuelle
+- édition rapide contextuelle
 
 Comportement :
 
-- si `shift_held = false`, la rangee agit selon `row3_base_mode`
-- si `shift_held = true`, la rangee agit en mode `RATCHET`
+- si `shift_held = false`, la rangée agit selon `row3_base_mode`
+- si `shift_held = true`, la rangée agit en mode `RATCHET`
 
 Modes retenus :
 
@@ -191,9 +191,9 @@ Modes retenus :
 
 ## 5.4 Encodeur
 
-Role :
+Rôle :
 
-- edition fine du parametre courant
+- édition fine du parametre courant
 
 En `STEP_EDIT` :
 
@@ -205,11 +205,11 @@ En `GLOBAL_EDIT` :
 
 ## 5.5 Poussoir encodeur
 
-Role retenu :
+Rôle retenu :
 
 - cycle le `encoder_target` dans `STEP_EDIT`
 
-Cycle recommande :
+Cycle recommandé :
 
 - `NOTE -> GATE -> VELOCITY -> NOTE`
 
@@ -219,7 +219,7 @@ Appui court :
 
 - alterne `row3_base_mode`
 
-Cycle recommande :
+Cycle recommandé :
 
 - `PROB <-> ONOFF`
 
@@ -229,13 +229,13 @@ Appui long :
 
 ## 5.7 Bouton SHIFT
 
-Role :
+Rôle :
 
 - modificateur momentane
 
 Effets :
 
-- si maintenu, la rangee 3 passe temporairement en `RATCHET`
+- si maintenu, la rangée 3 passe temporairement en `RATCHET`
 
 ## 5.8 Bouton PLAY
 
@@ -249,14 +249,14 @@ Effet :
 
 - passe `transport_state` a `STOPPED`
 - force `Note Off`
-- force `Gate Out A / B` a l'etat bas
+- force `Gate Out A / B` a l'état bas
 
 ## 5.10 Bouton RESET
 
 Effet :
 
 - remet la position de lecture au debut
-- force les Gates a l'etat bas
+- force les Gates a l'état bas
 
 ---
 
@@ -270,9 +270,9 @@ Condition :
 
 - appui long sur `MODE`
 
-## 6.2 Parametres globaux
+## 6.2 Paramètres globaux
 
-Ordre recommande de cycle :
+Ordre recommandé de cycle :
 
 1. `TEMPO`
 2. `ROOT`
@@ -284,7 +284,7 @@ Ordre recommande de cycle :
 
 ## 6.3 Navigation
 
-Comportement recommande :
+Comportement recommandé :
 
 - rotation encodeur = change valeur
 - poussoir encodeur = parametre global suivant
@@ -292,7 +292,7 @@ Comportement recommande :
 
 ---
 
-## 7. Overlays ecran
+## 7. Overlays écran
 
 ## 7.1 Regle generale
 
@@ -326,7 +326,7 @@ Gate: 60%
 
 ## 7.3 Timeout
 
-Apres une courte inactivite :
+Après une courte inactivité :
 
 - `overlay_active = false`
 - retour visuel a `HOME`
@@ -342,7 +342,7 @@ HOME -> STEP_EDIT
   quand un pas est choisi ou edite
 
 STEP_EDIT -> HOME
-  apres timeout
+  après timeout
 
 HOME -> GLOBAL_EDIT
   MODE long
@@ -353,21 +353,21 @@ GLOBAL_EDIT -> HOME
 
 ---
 
-## 9. Decisions implicites pour coder vite
+## 9. Décisions implicites pour coder vite
 
-Pour accelerer le developpement firmware :
+Pour accelerer le développement firmware :
 
 - pas de menu imbrique en V1
 - pas de curseur multi-niveaux
 - pas de page de configuration lourde
-- un seul target encodeur de step a la fois
-- un seul target global a la fois
+- un seul target encodeur de step à la fois
+- un seul target global à la fois
 
 ---
 
 ## 10. Points a garder stables
 
-Ces regles ne devraient pas changer legerement au fil du dev.
+Ces règles ne devraient pas changer legerement au fil du dev.
 
 Sinon :
 
