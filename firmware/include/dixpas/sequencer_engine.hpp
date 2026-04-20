@@ -18,6 +18,7 @@ class SequencerEngine {
   void set_random_seed(uint32_t seed);
 
   void start();
+  void resume();
   void stop();
   void tick();
 

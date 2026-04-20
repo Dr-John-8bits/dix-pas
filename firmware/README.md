@@ -20,6 +20,10 @@ Modules actuellement poses :
 - `ClockEngine`
 - `SequencerEngine`
 - `App`
+- `MidiDinEngine`
+- `MidiDinInputEngine`
+- `GateOutputEngine`
+- `StorageEngine`
 
 Capacites deja implementees :
 
@@ -33,6 +37,11 @@ Capacites deja implementees :
 - gate length par pas
 - velocity par pas
 - generation d'evenements `Note On/Off` et `Gate On/Off`
+- encodage `MIDI DIN` en octets
+- reception `MIDI DIN` temps reel (`Clock`, `Start`, `Continue`, `Stop`)
+- support clock interne et clock externe MIDI
+- etat runtime des deux `Gate Out`
+- sauvegarde / chargement de presets via slots fixes + `CRC16`
 
 Builds verifies :
 

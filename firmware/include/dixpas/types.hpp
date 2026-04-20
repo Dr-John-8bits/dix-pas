@@ -38,6 +38,11 @@ enum class TransportState : uint8_t {
   Playing = 1,
 };
 
+enum class ClockSource : uint8_t {
+  Internal = 0,
+  ExternalMidi = 1,
+};
+
 enum class TrackId : uint8_t {
   A = 0,
   B = 1,

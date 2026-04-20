@@ -3,6 +3,10 @@
 #include <stdint.h>
 
 #include "dixpas/clock_engine.hpp"
+#include "dixpas/fixed_queue.hpp"
+#include "dixpas/gate_output_engine.hpp"
+#include "dixpas/midi_din_engine.hpp"
+#include "dixpas/midi_din_input_engine.hpp"
 #include "dixpas/sequencer_engine.hpp"
 #include "dixpas/types.hpp"
 
@@ -17,12 +21,18 @@ class App {
 
   void seed_demo_project();
   void set_random_seed(uint32_t seed);
+  void set_clock_source(ClockSource source);
+  [[nodiscard]] ClockSource clock_source() const { return clock_.clock_source(); }
 
   void start();
+  void resume();
   void stop();
-  void tick();
+  void tick_internal();
+  void receive_midi_byte(uint8_t byte);
 
-  bool pop_event(EngineEvent& event) { return sequencer_.pop_event(event); }
+  bool pop_midi_byte(uint8_t& byte) { return midi_.pop_byte(byte); }
+  bool pop_routed_event(EngineEvent& event) { return monitor_queue_.pop(event); }
+  [[nodiscard]] bool gate_state(TrackId track) const { return gates_.gate_state(track); }
 
   [[nodiscard]] ClockEngine& clock() { return clock_; }
   [[nodiscard]] const ClockEngine& clock() const { return clock_; }
@@ -31,10 +41,19 @@ class App {
   }
 
  private:
+  static constexpr size_t kMonitorQueueCapacity = 64;
+
   ClockEngine clock_{};
   SequencerEngine sequencer_{};
+  MidiDinEngine midi_{};
+  MidiDinInputEngine midi_in_{};
+  GateOutputEngine gates_{};
+  FixedQueue<EngineEvent, kMonitorQueueCapacity> monitor_queue_{};
 
   static ProjectState build_default_project();
+  void process_pending_engine_events();
+  void process_pending_midi_input_events();
+  void advance_from_external_clock();
 };
 
 }  // namespace dixpas

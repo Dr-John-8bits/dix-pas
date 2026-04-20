@@ -81,6 +81,10 @@ void SequencerEngine::start() {
   process_step_boundary(current_tick_);
 }
 
+void SequencerEngine::resume() {
+  transport_state_ = TransportState::Playing;
+}
+
 void SequencerEngine::stop() {
   force_all_notes_and_gates_off();
   transport_state_ = TransportState::Stopped;

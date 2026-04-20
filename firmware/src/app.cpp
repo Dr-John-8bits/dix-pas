@@ -11,6 +11,10 @@ void App::load_project(const ProjectState& project) {
   sequencer_.load_project(project);
 }
 
+void App::set_clock_source(ClockSource source) {
+  clock_.set_clock_source(source);
+}
+
 void App::seed_demo_project() {
   ProjectState project = build_default_project();
 
@@ -45,17 +49,46 @@ void App::set_random_seed(uint32_t seed) {
 }
 
 void App::start() {
+  midi_.reset();
+  midi_in_.reset();
+  gates_.reset();
+  monitor_queue_.clear();
   clock_.start();
+  if (clock_.clock_source() == ClockSource::Internal) {
+    midi_.send_start();
+  }
   sequencer_.start();
+  process_pending_engine_events();
+}
+
+void App::resume() {
+  clock_.resume();
+  if (clock_.clock_source() == ClockSource::Internal) {
+    midi_.send_continue();
+  }
+  sequencer_.resume();
 }
 
 void App::stop() {
   sequencer_.stop();
   clock_.stop();
+  if (clock_.clock_source() == ClockSource::Internal) {
+    midi_.send_stop();
+  }
+  process_pending_engine_events();
 }
 
-void App::tick() {
+void App::tick_internal() {
+  if (clock_.clock_source() != ClockSource::Internal ||
+      transport_state() != TransportState::Playing) {
+    return;
+  }
+
   sequencer_.tick();
+  if ((sequencer_.current_tick() % kInternalTicksPerMidiClock) == 0U) {
+    midi_.send_clock();
+  }
+  process_pending_engine_events();
 }
 
 ProjectState App::build_default_project() {
@@ -70,6 +103,75 @@ ProjectState App::build_default_project() {
   project.track_a.midi_channel = 1;
   project.track_b.midi_channel = 2;
   return project;
+}
+
+void App::process_pending_engine_events() {
+  EngineEvent event;
+  while (sequencer_.pop_event(event)) {
+    monitor_queue_.push(event);
+
+    switch (event.type) {
+      case EventType::NoteOn:
+        midi_.send_note_on(event.midi_channel, event.note, event.velocity);
+        break;
+      case EventType::NoteOff:
+        midi_.send_note_off(event.midi_channel, event.note);
+        break;
+      case EventType::GateHigh:
+        gates_.set_gate(event.track, true);
+        break;
+      case EventType::GateLow:
+        gates_.set_gate(event.track, false);
+        break;
+    }
+  }
+}
+
+void App::receive_midi_byte(uint8_t byte) {
+  midi_in_.feed_byte(byte);
+  process_pending_midi_input_events();
+}
+
+void App::process_pending_midi_input_events() {
+  MidiInputEvent event;
+  while (midi_in_.pop_event(event)) {
+    switch (event.type) {
+      case MidiInputEventType::Clock:
+        if (clock_.clock_source() == ClockSource::ExternalMidi &&
+            transport_state() == TransportState::Playing) {
+          advance_from_external_clock();
+        }
+        break;
+      case MidiInputEventType::Start:
+        if (clock_.clock_source() == ClockSource::ExternalMidi) {
+          clock_.start();
+          sequencer_.start();
+          process_pending_engine_events();
+        }
+        break;
+      case MidiInputEventType::Continue:
+        if (clock_.clock_source() == ClockSource::ExternalMidi) {
+          clock_.resume();
+          sequencer_.resume();
+        }
+        break;
+      case MidiInputEventType::Stop:
+        if (clock_.clock_source() == ClockSource::ExternalMidi) {
+          sequencer_.stop();
+          clock_.stop();
+          process_pending_engine_events();
+        }
+        break;
+    }
+  }
+}
+
+void App::advance_from_external_clock() {
+  const uint8_t ticks = clock_.external_clock_to_internal_ticks();
+  for (uint8_t index = 0; index < ticks; ++index) {
+    sequencer_.tick();
+    process_pending_engine_events();
+  }
 }
 
 }  // namespace dixpas
