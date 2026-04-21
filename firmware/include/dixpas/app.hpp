@@ -49,6 +49,9 @@ class App {
   [[nodiscard]] bool has_last_midi_input_event() const { return has_last_midi_input_event_; }
   [[nodiscard]] MidiInputEvent last_midi_input_event() const { return last_midi_input_event_; }
   [[nodiscard]] bool gate_state(TrackId track) const { return gates_.gate_state(track); }
+  [[nodiscard]] bool has_runtime_overflow() const;
+  [[nodiscard]] uint32_t runtime_overflow_count() const;
+  void clear_runtime_overflow();
   [[nodiscard]] bool has_playhead_step(TrackId track) const {
     return sequencer_.has_playhead_step(track);
   }

@@ -30,6 +30,9 @@ class MidiDinInputEngine {
   void reset();
   void feed_byte(uint8_t byte);
   bool pop_event(MidiInputEvent& event);
+  [[nodiscard]] bool has_overflowed() const { return event_queue_.overflowed(); }
+  [[nodiscard]] uint32_t dropped_event_count() const { return event_queue_.dropped_count(); }
+  void clear_overflow() { event_queue_.clear_overflow(); }
 
  private:
   FixedQueue<MidiInputEvent, kEventQueueCapacity> event_queue_{};

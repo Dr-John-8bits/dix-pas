@@ -277,9 +277,14 @@ void DisplayEngine::render(const App& app, const UiController& ui, DisplayFrame&
     format_line(frame.lines[1], "FRAM:%s OLED:%s", ui.storage_available() ? "OK" : "MISS",
                 ui.display_available() ? "OK" : "MISS");
     copy_line(frame.lines[2], ui.diagnostic_event());
-    format_line(frame.lines[3], "In:%s %s %s", midi_input_label(app),
-                transport_label(app.transport_state()),
-                app.clock_source() == ClockSource::ExternalMidi ? "Ext" : "Int");
+    if (app.has_runtime_overflow()) {
+      format_line(frame.lines[3], "In:%s Ovf:%lu", midi_input_label(app),
+                  static_cast<unsigned long>(app.runtime_overflow_count()));
+    } else {
+      format_line(frame.lines[3], "In:%s %s %s", midi_input_label(app),
+                  transport_label(app.transport_state()),
+                  app.clock_source() == ClockSource::ExternalMidi ? "Ext" : "Int");
+    }
     return;
   }
 

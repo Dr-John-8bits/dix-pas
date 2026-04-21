@@ -69,6 +69,7 @@ Capacités déjà implémentées :
 - rendu d'un écran texte simulant l'OLED
 - adaptateur OLED I2C matériel `SSD1306` prêt pour l'Arduino
 - rendu OLED paginé sans framebuffer complet pour économiser la RAM du `Nano Every`
+- rendu OLED différentiel par ligne pour éviter de réécrire inutilement l'écran complet
 - splash de boot avec branding et version firmware
 - tentative de chargement automatique du dernier preset connu au démarrage
 - mode diagnostic via `SHIFT + RESET`
@@ -78,6 +79,7 @@ Capacités déjà implémentées :
 - `RESET` relance le cycle de test depuis la phase `A On`
 - états `FRAM / OLED` et dernier événement visibles dans le diagnostic
 - dernier événement `MIDI IN` visible dans le diagnostic
+- overflows runtime visibles dans le diagnostic
 - fallback de démarrage si FRAM absente ou preset invalide
 - boot Arduino en état `STOP`, sans auto-play
 
@@ -118,6 +120,8 @@ Le runner `native_checks` valide actuellement :
 - bascule `SHIFT + RESET` vers le diagnostic
 - bascule `SHIFT + PLAY` vers le mode test `MIDI / Gate`
 - affichage du dernier `MIDI IN` dans le diagnostic
+- rendu OLED différentiel
+- détection d'overflow des files MIDI/runtime
 
 Commandes utiles :
 

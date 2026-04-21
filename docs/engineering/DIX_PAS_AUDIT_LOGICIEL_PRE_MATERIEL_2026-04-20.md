@@ -27,7 +27,7 @@ Builds relancés avec succès :
 
 Résultat du runner natif :
 
-- **20 / 20 checks OK**
+- **22 / 22 checks OK**
 
 Empreinte actuelle `Nano Every` :
 
@@ -135,9 +135,11 @@ Validé :
 - mode test `MIDI / Gate` via `SHIFT + PLAY`
 - rendu OLED simulé
 - driver OLED `SSD1306`
+- rendu OLED différentiel par ligne
 - backend boutons `74HC165`
 - backend LEDs `74HC595`
 - configuration hardware centralisée
+- détection d'overflow runtime exposée au diagnostic
 
 ---
 
@@ -238,4 +240,3 @@ En pratique :
 - l'achat des composants peut être lancé
 - la suite doit être une phase `assemblage -> bring-up -> debug réel`
 - on ne doit plus être en phase de conception logicielle de base
-

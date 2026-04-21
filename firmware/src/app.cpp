@@ -179,6 +179,35 @@ void App::clear_manual_test_outputs() {
   gates_.reset();
 }
 
+bool App::has_runtime_overflow() const {
+  return sequencer_.has_overflowed() || midi_.has_overflowed() || midi_in_.has_overflowed() ||
+         monitor_queue_.overflowed();
+}
+
+uint32_t App::runtime_overflow_count() const {
+  uint32_t total = 0U;
+  const uint32_t values[] = {
+      sequencer_.dropped_event_count(),
+      midi_.dropped_byte_count(),
+      midi_in_.dropped_event_count(),
+      monitor_queue_.dropped_count(),
+  };
+
+  for (uint8_t index = 0U; index < (sizeof(values) / sizeof(values[0])); ++index) {
+    const uint32_t next = total + values[index];
+    total = next < total ? 0xFFFFFFFFU : next;
+  }
+
+  return total;
+}
+
+void App::clear_runtime_overflow() {
+  sequencer_.clear_overflow();
+  midi_.clear_overflow();
+  midi_in_.clear_overflow();
+  monitor_queue_.clear_overflow();
+}
+
 void App::tick_internal() {
   if (clock_.clock_source() != ClockSource::Internal ||
       transport_state() != TransportState::Playing) {

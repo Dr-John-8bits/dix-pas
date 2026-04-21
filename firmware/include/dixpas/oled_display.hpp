@@ -36,9 +36,13 @@ class OledDisplay {
   uint8_t device_address_ = kDefaultOledI2cAddress;
   uint8_t transfer_size_ = kOledMaxTransferSize;
   bool ready_ = false;
+  DisplayFrame rendered_frame_{};
+  bool rendered_frame_valid_ = false;
 
   bool send_commands(const uint8_t* commands, size_t size);
   bool send_data_chunk(const uint8_t* data, size_t size);
+  bool write_page(uint8_t page, const uint8_t* data);
+  void invalidate_cache();
   void draw_text(uint8_t* page_buffer, uint8_t x, const char* text);
   void draw_char(uint8_t* page_buffer, uint8_t x, char c);
 };

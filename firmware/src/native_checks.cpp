@@ -137,6 +137,12 @@ class MockOledI2cPort : public OledI2cPort {
   uint16_t command_packet_count() const { return command_packet_count_; }
   uint16_t data_packet_count() const { return data_packet_count_; }
   bool saw_non_zero_pixels() const { return saw_non_zero_pixels_; }
+  void reset_stats() {
+    max_packet_size_ = 0U;
+    command_packet_count_ = 0U;
+    data_packet_count_ = 0U;
+    saw_non_zero_pixels_ = false;
+  }
 
  private:
   bool begin_called_ = false;
@@ -382,6 +388,49 @@ bool test_oled_display_initializes_and_renders(CheckContext& ctx) {
 
   CHECK_TRUE(ctx, display.render(frame));
   CHECK_TRUE(ctx, port.saw_non_zero_pixels());
+  return true;
+}
+
+bool test_oled_display_skips_unchanged_pages(CheckContext& ctx) {
+  MockOledI2cPort port;
+  OledDisplay display(port);
+  DisplayFrame frame{};
+
+  CHECK_TRUE(ctx, display.begin());
+
+  strcpy(frame.lines[0], "Dual Stop Int 120.0");
+  strcpy(frame.lines[1], "A> s01 p00 l08 c01");
+  strcpy(frame.lines[2], "B  s01 p00 l05 c02");
+  strcpy(frame.lines[3], "R3:Prob Enc:Note");
+
+  port.reset_stats();
+  CHECK_TRUE(ctx, display.render(frame));
+  CHECK_EQ(ctx, 4U, port.command_packet_count());
+  CHECK_EQ(ctx, 32U, port.data_packet_count());
+
+  port.reset_stats();
+  CHECK_TRUE(ctx, display.render(frame));
+  CHECK_EQ(ctx, 0U, port.command_packet_count());
+  CHECK_EQ(ctx, 0U, port.data_packet_count());
+
+  strcpy(frame.lines[2], "B  s02 p02 l05 c02");
+  port.reset_stats();
+  CHECK_TRUE(ctx, display.render(frame));
+  CHECK_EQ(ctx, 1U, port.command_packet_count());
+  CHECK_EQ(ctx, 8U, port.data_packet_count());
+  CHECK_TRUE(ctx, port.saw_non_zero_pixels());
+  return true;
+}
+
+bool test_midi_engine_reports_queue_overflow(CheckContext& ctx) {
+  MidiDinEngine midi;
+
+  for (uint16_t index = 0U; index < 100U; ++index) {
+    midi.send_note_on(1U, static_cast<uint8_t>(60U + (index % 12U)), 100U);
+  }
+
+  CHECK_TRUE(ctx, midi.has_overflowed());
+  CHECK_TRUE(ctx, midi.dropped_byte_count() > 0U);
   return true;
 }
 
@@ -759,6 +808,8 @@ int main() {
       {"fram_i2c_backend_roundtrip_and_chunking", test_fram_i2c_backend_roundtrip_and_chunking},
       {"ui_scanner_emits_mode_short_and_long", test_ui_scanner_emits_mode_short_and_long},
       {"oled_display_initializes_and_renders", test_oled_display_initializes_and_renders},
+      {"oled_display_skips_unchanged_pages", test_oled_display_skips_unchanged_pages},
+      {"midi_engine_reports_queue_overflow", test_midi_engine_reports_queue_overflow},
       {"boot_screen_renders_branding_and_version",
        test_boot_screen_renders_branding_and_version},
       {"boot_exit_shows_startup_overlay", test_boot_exit_shows_startup_overlay},

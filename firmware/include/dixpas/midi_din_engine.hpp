@@ -22,6 +22,9 @@ class MidiDinEngine {
   void send_stop();
 
   bool pop_byte(uint8_t& value);
+  [[nodiscard]] bool has_overflowed() const { return byte_queue_.overflowed(); }
+  [[nodiscard]] uint32_t dropped_byte_count() const { return byte_queue_.dropped_count(); }
+  void clear_overflow() { byte_queue_.clear_overflow(); }
 
  private:
   FixedQueue<uint8_t, kByteQueueCapacity> byte_queue_{};

@@ -75,6 +75,23 @@ Règle simple :
 - le `DOCUMENT_TECHNIQUE` explique comment réaliser
 - les `TESTS_ACCEPTATION_V1` disent quand la V1 est validée
 
+## Lecture avant achat
+
+Si ton objectif est de savoir **quoi acheter avant de lancer les commandes**, l'ordre de lecture recommandé est :
+
+1. [docs/product/DIX_PAS_SOURCE_DE_VERITE.md](docs/product/DIX_PAS_SOURCE_DE_VERITE.md)
+2. [docs/product/DIX_PAS_DECISIONS.md](docs/product/DIX_PAS_DECISIONS.md)
+3. [docs/engineering/DIX_PAS_AUDIT_LOGICIEL_PRE_MATERIEL_2026-04-20.md](docs/engineering/DIX_PAS_AUDIT_LOGICIEL_PRE_MATERIEL_2026-04-20.md)
+4. [docs/engineering/DIX_PAS_document_technique.md](docs/engineering/DIX_PAS_document_technique.md)
+5. [docs/engineering/DIX_PAS_ALIMENTATION_REFERENCE.md](docs/engineering/DIX_PAS_ALIMENTATION_REFERENCE.md)
+6. [docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md](docs/engineering/DIX_PAS_INTERFACES_MIDI_GATE_REFERENCE.md)
+7. [docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md](docs/engineering/DIX_PAS_PIN_MAP_DRAFT.md)
+8. [bom/DIX_PAS_BOM_v0.md](bom/DIX_PAS_BOM_v0.md)
+9. [bom/DIX_PAS_BOM_ACHAT_COEUR_V1.md](bom/DIX_PAS_BOM_ACHAT_COEUR_V1.md)
+10. [docs/setup/DIX_PAS_ACHATS_PAR_PHASE.md](docs/setup/DIX_PAS_ACHATS_PAR_PHASE.md)
+
+Après ça, tu auras la base la plus utile pour préparer l'achat sans rentrer trop tôt dans les détails d'assemblage.
+
 ## Sans hardware
 
 On peut avancer sérieusement sans acheter l'Arduino tout de suite.
@@ -99,8 +116,9 @@ Le détail est documenté dans [LICENSING.md](LICENSING.md).
 ## Démarrage rapide
 
 1. lire [docs/product/DIX_PAS_SOURCE_DE_VERITE.md](docs/product/DIX_PAS_SOURCE_DE_VERITE.md)
-2. lire [docs/setup/DIX_PAS_SETUP_MAC.md](docs/setup/DIX_PAS_SETUP_MAC.md)
-3. valider le hardware critique à acheter
-4. implémenter le cœur de séquence dans `firmware/`
-5. intégrer `MIDI OUT`, `Gate Out` et UI
-6. passer la checklist de [docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md](docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md)
+2. lire [docs/engineering/DIX_PAS_AUDIT_LOGICIEL_PRE_MATERIEL_2026-04-20.md](docs/engineering/DIX_PAS_AUDIT_LOGICIEL_PRE_MATERIEL_2026-04-20.md)
+3. lire [docs/setup/DIX_PAS_ACHATS_PAR_PHASE.md](docs/setup/DIX_PAS_ACHATS_PAR_PHASE.md)
+4. lire [docs/setup/DIX_PAS_EXECUTION_STEP_BY_STEP.md](docs/setup/DIX_PAS_EXECUTION_STEP_BY_STEP.md)
+5. commander le cœur électronique validé
+6. suivre le bring-up dans [docs/setup/DIX_PAS_BRING_UP_HARDWARE.md](docs/setup/DIX_PAS_BRING_UP_HARDWARE.md)
+7. passer la checklist de [docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md](docs/product/DIX_PAS_TESTS_ACCEPTATION_V1.md)

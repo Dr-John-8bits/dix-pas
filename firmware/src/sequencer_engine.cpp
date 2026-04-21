@@ -47,6 +47,7 @@ void SequencerEngine::start() {
   for (ScheduledEvent& scheduled_event : scheduled_events_) {
     scheduled_event.used = false;
   }
+  dropped_scheduled_event_count_ = 0U;
 
   current_tick_ = 0U;
   transport_state_ = TransportState::Playing;
@@ -88,6 +89,22 @@ void SequencerEngine::tick() {
 
 bool SequencerEngine::pop_event(EngineEvent& event) {
   return output_queue_.pop(event);
+}
+
+bool SequencerEngine::has_overflowed() const {
+  return output_queue_.overflowed() || dropped_scheduled_event_count_ > 0U;
+}
+
+uint32_t SequencerEngine::dropped_event_count() const {
+  const uint32_t scheduled = dropped_scheduled_event_count_;
+  const uint32_t queued = output_queue_.dropped_count();
+  const uint32_t total = scheduled + queued;
+  return total < scheduled ? 0xFFFFFFFFU : total;
+}
+
+void SequencerEngine::clear_overflow() {
+  output_queue_.clear_overflow();
+  dropped_scheduled_event_count_ = 0U;
 }
 
 bool SequencerEngine::has_playhead_step(TrackId track_id) const {
@@ -313,6 +330,9 @@ bool SequencerEngine::schedule_event(const EngineEvent& event) {
     return true;
   }
 
+  if (dropped_scheduled_event_count_ != 0xFFFFFFFFU) {
+    ++dropped_scheduled_event_count_;
+  }
   return false;
 }
 

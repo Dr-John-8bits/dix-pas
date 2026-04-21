@@ -28,6 +28,9 @@ class SequencerEngine {
   [[nodiscard]] uint32_t current_tick() const { return current_tick_; }
   [[nodiscard]] bool has_playhead_step(TrackId track_id) const;
   [[nodiscard]] uint8_t playhead_step(TrackId track_id) const;
+  [[nodiscard]] bool has_overflowed() const;
+  [[nodiscard]] uint32_t dropped_event_count() const;
+  void clear_overflow();
 
   bool pop_event(EngineEvent& event);
 
@@ -63,6 +66,7 @@ class SequencerEngine {
 
   FixedQueue<EngineEvent, kOutputQueueCapacity> output_queue_{};
   ScheduledEvent scheduled_events_[kScheduledEventCapacity]{};
+  uint32_t dropped_scheduled_event_count_ = 0U;
 
   void reset_runtime_state();
   void sanitize_project();

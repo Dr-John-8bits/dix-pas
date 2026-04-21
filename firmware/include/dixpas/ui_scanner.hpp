@@ -55,6 +55,9 @@ class UiScanner {
   void reset();
   void update(const UiInputSnapshot& snapshot, uint16_t elapsed_ms);
   bool pop_event(UiInputEvent& event) { return event_queue_.pop(event); }
+  [[nodiscard]] bool has_overflowed() const { return event_queue_.overflowed(); }
+  [[nodiscard]] uint32_t dropped_event_count() const { return event_queue_.dropped_count(); }
+  void clear_overflow() { event_queue_.clear_overflow(); }
 
  private:
   static constexpr size_t kEventQueueCapacity = 32;

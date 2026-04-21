@@ -187,6 +187,7 @@ OledDisplay::OledDisplay(OledI2cPort& port, uint8_t device_address, uint8_t tran
 
 bool OledDisplay::begin() {
   ready_ = false;
+  invalidate_cache();
   if (!port_.begin()) {
     return false;
   }
@@ -215,20 +216,8 @@ bool OledDisplay::clear() {
   memset(page_buffer, 0, sizeof(page_buffer));
 
   for (uint8_t page = 0; page < kOledPageCount; ++page) {
-    const uint8_t commands[] = {
-        static_cast<uint8_t>(0xB0U + page), 0x00U, 0x10U,
-    };
-
-    if (!send_commands(commands, sizeof(commands))) {
+    if (!write_page(page, page_buffer)) {
       return false;
-    }
-
-    for (uint8_t x = 0; x < kOledWidth; x = static_cast<uint8_t>(x + transfer_size_)) {
-      const size_t chunk =
-          (kOledWidth - x) > transfer_size_ ? transfer_size_ : (kOledWidth - x);
-      if (!send_data_chunk(page_buffer + x, chunk)) {
-        return false;
-      }
     }
   }
 
@@ -240,34 +229,25 @@ bool OledDisplay::render(const DisplayFrame& frame) {
     return false;
   }
 
-  for (uint8_t page = 0; page < kOledPageCount; ++page) {
-    uint8_t page_buffer[kOledWidth]{};
-    memset(page_buffer, 0, sizeof(page_buffer));
-
-    if ((page % 2U) == 0U) {
-      const uint8_t line_index = static_cast<uint8_t>(page / 2U);
-      if (line_index < kDisplayLineCount) {
-        draw_text(page_buffer, 0U, frame.lines[line_index]);
-      }
+  for (uint8_t line_index = 0; line_index < kDisplayLineCount; ++line_index) {
+    if (rendered_frame_valid_ &&
+        strcmp(rendered_frame_.lines[line_index], frame.lines[line_index]) == 0) {
+      continue;
     }
 
-    const uint8_t commands[] = {
-        static_cast<uint8_t>(0xB0U + page), 0x00U, 0x10U,
-    };
+    uint8_t page_buffer[kOledWidth]{};
+    memset(page_buffer, 0, sizeof(page_buffer));
+    draw_text(page_buffer, 0U, frame.lines[line_index]);
 
-    if (!send_commands(commands, sizeof(commands))) {
+    if (!write_page(static_cast<uint8_t>(line_index * 2U), page_buffer)) {
       return false;
     }
 
-    for (uint8_t x = 0; x < kOledWidth; x = static_cast<uint8_t>(x + transfer_size_)) {
-      const size_t chunk =
-          (kOledWidth - x) > transfer_size_ ? transfer_size_ : (kOledWidth - x);
-      if (!send_data_chunk(page_buffer + x, chunk)) {
-        return false;
-      }
-    }
+    strncpy(rendered_frame_.lines[line_index], frame.lines[line_index], kDisplayLineWidth);
+    rendered_frame_.lines[line_index][kDisplayLineWidth] = '\0';
   }
 
+  rendered_frame_valid_ = true;
   return true;
 }
 
@@ -298,6 +278,36 @@ bool OledDisplay::send_data_chunk(const uint8_t* data, size_t size) {
   packet[0] = kOledControlData;
   memcpy(packet + 1U, data, size);
   return port_.write_bytes(device_address_, packet, size + 1U);
+}
+
+bool OledDisplay::write_page(uint8_t page, const uint8_t* data) {
+  if (data == nullptr) {
+    return false;
+  }
+
+  const uint8_t commands[] = {
+      static_cast<uint8_t>(0xB0U + page), 0x00U, 0x10U,
+  };
+
+  if (!send_commands(commands, sizeof(commands))) {
+    return false;
+  }
+
+  for (uint8_t x = 0; x < kOledWidth; x = static_cast<uint8_t>(x + transfer_size_)) {
+    const size_t chunk =
+        (kOledWidth - x) > transfer_size_ ? transfer_size_ : (kOledWidth - x);
+    if (!send_data_chunk(data + x, chunk)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void OledDisplay::invalidate_cache() {
+  for (uint8_t line = 0; line < kDisplayLineCount; ++line) {
+    rendered_frame_.lines[line][0] = '\0';
+  }
+  rendered_frame_valid_ = false;
 }
 
 void OledDisplay::draw_text(uint8_t* page_buffer, uint8_t x, const char* text) {
