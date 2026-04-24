@@ -22,6 +22,14 @@ void App::apply_project(const ProjectState& project, bool reset_playhead) {
 }
 
 void App::set_clock_source(ClockSource source) {
+  if (source == clock_.clock_source()) {
+    return;
+  }
+
+  if (transport_state() == TransportState::Playing) {
+    stop();
+  }
+
   clock_.set_clock_source(source);
 }
 

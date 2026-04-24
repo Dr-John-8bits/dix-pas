@@ -484,6 +484,79 @@ bool test_external_midi_clock_advances_transport(CheckContext& ctx) {
   return true;
 }
 
+bool test_restart_while_playing_sends_note_off(CheckContext& ctx) {
+  App app;
+  ProjectState project{};
+  project.track_a.length = 1U;
+  project.track_b.length = 1U;
+  project.track_a.midi_channel = 1U;
+  project.track_b.midi_channel = 2U;
+  project.track_a.steps[0] = Step(true, 0U, 100U, 1U, 100U, 100U);
+  project.track_b.steps[0] = Step(false, 0U, 100U, 1U, 75U, 100U);
+  app.load_project(project);
+
+  app.start();
+  CHECK_TRUE(ctx, app.gate_state(TrackId::A));
+
+  uint8_t byte = 0U;
+  while (app.pop_midi_byte(byte)) {
+  }
+
+  app.start();
+
+  bool saw_note_off = false;
+  bool saw_note_on_after_off = false;
+  while (app.pop_midi_byte(byte)) {
+    if (byte == 0x80U) {
+      saw_note_off = true;
+    }
+    if (byte == 0x90U && saw_note_off) {
+      saw_note_on_after_off = true;
+    }
+  }
+
+  CHECK_TRUE(ctx, saw_note_off);
+  CHECK_TRUE(ctx, saw_note_on_after_off);
+  CHECK_TRUE(ctx, app.gate_state(TrackId::A));
+  return true;
+}
+
+bool test_clock_source_switch_while_playing_stops_outputs(CheckContext& ctx) {
+  App app;
+  ProjectState project{};
+  project.track_a.length = 1U;
+  project.track_b.length = 1U;
+  project.track_a.midi_channel = 1U;
+  project.track_b.midi_channel = 2U;
+  project.track_a.steps[0] = Step(true, 0U, 100U, 1U, 100U, 100U);
+  project.track_b.steps[0] = Step(false, 0U, 100U, 1U, 75U, 100U);
+  app.load_project(project);
+
+  app.start();
+  CHECK_EQ(ctx, TransportState::Playing, app.transport_state());
+  CHECK_TRUE(ctx, app.gate_state(TrackId::A));
+
+  uint8_t byte = 0U;
+  while (app.pop_midi_byte(byte)) {
+  }
+
+  app.set_clock_source(ClockSource::ExternalMidi);
+
+  bool saw_note_off = false;
+  while (app.pop_midi_byte(byte)) {
+    if (byte == 0x80U) {
+      saw_note_off = true;
+    }
+  }
+
+  CHECK_EQ(ctx, ClockSource::ExternalMidi, app.clock_source());
+  CHECK_EQ(ctx, TransportState::Stopped, app.transport_state());
+  CHECK_TRUE(ctx, saw_note_off);
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::A));
+  CHECK_TRUE(ctx, !app.gate_state(TrackId::B));
+  return true;
+}
+
 bool test_ui_generates_and_mutates_slots_from_global_edit(CheckContext& ctx) {
   App app;
   MemoryStorageBackend backend;
@@ -814,6 +887,9 @@ int main() {
        test_boot_screen_renders_branding_and_version},
       {"boot_exit_shows_startup_overlay", test_boot_exit_shows_startup_overlay},
       {"external_midi_clock_advances_transport", test_external_midi_clock_advances_transport},
+      {"restart_while_playing_sends_note_off", test_restart_while_playing_sends_note_off},
+      {"clock_source_switch_while_playing_stops_outputs",
+       test_clock_source_switch_while_playing_stops_outputs},
       {"ui_generates_and_mutates_slots_from_global_edit",
        test_ui_generates_and_mutates_slots_from_global_edit},
       {"ui_can_switch_clock_source_from_global_edit",

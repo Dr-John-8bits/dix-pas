@@ -44,9 +44,7 @@ void SequencerEngine::set_random_seed(uint32_t seed) {
 
 void SequencerEngine::start() {
   output_queue_.clear();
-  for (ScheduledEvent& scheduled_event : scheduled_events_) {
-    scheduled_event.used = false;
-  }
+  force_all_notes_and_gates_off();
   dropped_scheduled_event_count_ = 0U;
 
   current_tick_ = 0U;

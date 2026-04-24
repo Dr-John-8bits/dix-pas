@@ -1,0 +1,10 @@
+.DS_Store
+.vscode/
+
+firmware/.pio/
+firmware/.pio-core/
+firmware/.vscode/
+firmware/build/
+
+*.swp
+*.swo
